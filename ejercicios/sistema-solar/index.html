@@ -474,10 +474,6 @@
             // el dia en la tierra esta determinado por la velocidad de rotación de la misma
             mat4.rotate(m2, m2, velRotTierra/30 * tiempo, [0,1,0]);
 
-            // pero para que la cuenta de bien, hay que restarle la velocidad de traslación de la tierra
-            // que ya tiene adicionada por parte de la matriz comun.
-            mat4.rotate(m2, m2, velTrasTierra * tiempo, [0,-1,0]);
-
             // trasladamos la luna ahora una distancia equivalente a la real entre
             // la tierra y la luna para posicionar el objeto en la escena.
             mat4.translate(m2, m2,[calcDistEscena(distTierraLuna/10),0,0]);
