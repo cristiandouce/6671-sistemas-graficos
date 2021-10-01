@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+
+    <meta charset="UTF-8">
+    <title>Sistema Solar</title>
+    <link rel="stylesheet" type="text/css" href="css/global.css"></link>
+    <script src="js2/trails.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/gl-matrix-3.3.0.min.js"></script>
+    <script src="js/three.js"></script>
+    <script src="js/loaders/ColladaLoader.js"></script>
+    <script src="js/controls/OrbitControls.js"></script>
+
+    <style>
+        #display{
+            position: absolute;
+            bottom:0;
+            left:0;
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #999999;
+            color:#999999;
+
+
+        }
+    </style>
+</head>
+<body>
+    <div id="container3D"></div>
+    <div id="display">
+
+    </div>
+
+    <script type="text/javascript">
+
+        var mat4=glMatrix.mat4;
+        var vec3=glMatrix.vec4;
+
+        var $window=$(window);
+        var $container = $('#container3D');
+
+        var renderer,camera,scene,controls;
+
+        var sol,tierra,luna,iss,apollo;
+        var tiempo=0;
+
+        var distanciaCam=30;
+        var lastTargetPos=null;
+
+        var modelos={
+            "sol.dae":null,
+            "apollo.dae":null,
+            "iss.dae":null,
+            "tierra.dae":null,
+            "luna.dae":null,
+        }
+
+        var texturas={
+            "earth2.jpg":null,
+            "sun.jpg":null,
+            "moon2.jpg":null,
+            "refmap1b.jpg":null,
+        }
+
+        var materiales;
+
+        var currentCameraTarget=0;
+
+        var cameraTargets=[
+            "sol.dae",
+            "tierra.dae",
+            "luna.dae",
+            "iss.dae",
+            "apollo.dae",
+        ]
+        var lastRelCameraPositions=[null,null,null,null,null];
+
+
+        var speed=4;
+
+        var trail1,trail2,trail3;
+
+        var maxGridPoints = 1000;
+        var maxGridDivisions = 100;
+
+
+        function start(){
+
+            // configuración básica de Three.js
+            renderer = new THREE.WebGLRenderer({antialias:true});
+            renderer.setSize($window.width()-5, $window.height()-5);
+
+            var aspect=$window.width()/$window.height();
+
+            camera=new THREE.PerspectiveCamera(45,aspect,0.1,100000);
+            camera.position.set(-80,80,80);
+            //camera.lookAt(new THREE.Vector3(0,0,0));
+
+            scene = new THREE.Scene();
+            controls = new THREE.OrbitControls(camera,renderer.domElement);
+
+            $container.append(renderer.domElement);
+            $window.resize(onResize);
+
+            // Defino elementos de la escena
+
+            var ambienLight=new THREE.AmbientLight(0x222266);
+            scene.add(ambienLight);
+
+            var light1 = new THREE.PointLight(0xFFEEEE, 1);
+            light1.position.set(0,0,0);
+            scene.add(light1);
+
+            var gridHelper = new THREE.GridHelper( maxGridPoints, maxGridDivisions, new THREE.Color(0x666666),new THREE.Color(0x333333) );
+            scene.add( gridHelper );
+
+            var axesHelper = new THREE.AxesHelper( 8 );
+            scene.add( axesHelper );
+
+
+
+            trail3=new Trail(1000,new THREE.Vector3(0,0,0),0.15);
+            trail2=new Trail(1000,new THREE.Vector3(0,0,0),0.45);
+            trail1=new Trail(1000,new THREE.Vector3(0,0,0),0.75);
+        }
+
+
+
+        function loadTextures(){
+
+            var manager = new THREE.LoadingManager();
+
+            manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+                //console.log( 'Cargando textura: ' + url + '.\nCargadas ' + itemsLoaded + ' de ' + itemsTotal + ' texturas.' );
+            };
+
+            manager.onLoad = function ( ) {
+                console.log( 'Carga de texturas completa');
+            };
+
+            manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+                console.log( 'Cargando textura: ' + url + '.\nCargadas ' + itemsLoaded + ' de ' + itemsTotal + ' texturas.' );
+                if (itemsLoaded==itemsTotal) createScene();
+            };
+
+            manager.onError = function ( url ) {
+                console.log( 'Hubo un error al cargar ' + url );
+            };
+
+            var filenames=Object.keys(texturas);
+
+            for (var i = 0; i < filenames.length; i++) {
+                var loader = new THREE.TextureLoader(manager);
+                loader.load('maps/'+filenames[i],onTextureLoaded.bind(this,filenames[i]));
+            }
+
+        }
+
+        function onTextureLoaded(file,texture){
+            console.log("onTextureLoaded "+file)
+            texturas[file]=texture;
+        }
+
+        function createScene(){
+
+
+            materiales={
+                "tierra":new THREE.MeshPhongMaterial({
+                    color: 0xFFFFFF,
+                    specular: 0xFFFFFF,
+                    shininess: 2,
+                    emissive:0x222222,
+                    map: texturas["earth2.jpg"],
+
+                }),
+                "sol": new THREE.MeshPhongMaterial({
+                    color: 0xFFFFFF,
+                    shininess: 1,
+                    map: texturas["sun.jpg"],
+                    lightMap: texturas["sun.jpg"],
+
+                }),
+                "luna": new THREE.MeshPhongMaterial({
+                    color: 0xAAAAAA,
+                    emissive:0x222222,
+                    shininess: 2,
+                    map: texturas["moon2.jpg"],
+
+                }),
+                "apollo":new THREE.MeshPhongMaterial({
+                    color: 0x666666,
+                    specular: 0x993300,
+                    emissive:0x993300,
+                    shininess: 64,
+                    //envMap:texturas["refmap1b.jpg"],
+                    side: THREE.DoubleSide
+                }),
+                "iss":new THREE.MeshPhongMaterial({
+                    color: 0x666666,
+                    specular: 0x999999,
+                    emissive:0x333333,
+                    shininess: 64,
+                    //envMap:texturas["refmap1b.jpg"],
+                    side: THREE.DoubleSide
+                })
+            };
+
+
+
+            var manager = new THREE.LoadingManager();
+
+            manager.onStart = function ( url, itemsLoaded, itemsTotal ) {
+                console.log( 'Cargando modelo: ' + url + '.\nCargados ' + itemsLoaded + ' de ' + itemsTotal + ' modelos.' );
+            };
+
+            manager.onLoad = function ( ) {
+                console.log( 'Carga de modelos completa');
+            };
+
+            manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+                console.log( 'Cargando archivo: ' + url + '.\nCargados ' + itemsLoaded + ' de ' + itemsTotal + ' modelos.' );
+                if (itemsLoaded==itemsTotal) onModelsLoaded();
+            };
+
+            manager.onError = function ( url ) {
+                console.log( 'Hubo un error al cargar ' + url );
+
+            };
+
+            var filenames=Object.keys(modelos);
+
+            for (var i = 0; i < filenames.length; i++) {
+                var loader = new THREE.ColladaLoader(manager);
+                loader.load('modelos/'+filenames[i],onModelLoaded.bind(this,filenames[i]));
+            }
+
+        }
+
+        function onModelLoaded(filename,collada){
+            //console.log(collada.scene.children[0]);
+            modelos[filename]=collada.scene.children[0];
+            modelos[filename].rotation.set(0,0,0);
+            modelos[filename].position.set(0,0,0);
+
+            var escala=3;
+            switch(filename){
+
+                case "tierra.dae": escala=15;break;
+                case "luna.dae": escala=7;break;
+            }
+            var axesHelper = new THREE.AxesHelper( escala );
+            modelos[filename].add( axesHelper );
+        }
+
+        function toggleCam(){
+
+            // guardo la posicion relativa de la camara al target
+            var camPos=camera.position.clone();
+            var targetPos=modelos[cameraTargets[currentCameraTarget]].localToWorld(new THREE.Vector3(0,0,0));
+            var relCamPos=camPos.clone();
+            relCamPos.sub(targetPos);
+            lastRelCameraPositions[currentCameraTarget]=relCamPos;
+
+            console.log("posicion relativa del target "+currentCameraTarget+": ");
+            console.log(relCamPos);
+
+            // incremento currentCameraTarget
+            if (currentCameraTarget<cameraTargets.length-1) currentCameraTarget++;
+            else currentCameraTarget=0;
+
+            if (lastRelCameraPositions[currentCameraTarget]!=null) {
+                var targetPos=modelos[cameraTargets[currentCameraTarget]].localToWorld(new THREE.Vector3(0,0,0));
+                var p=lastRelCameraPositions[currentCameraTarget].clone();
+
+                console.log("posicion relativa recuperada del "+currentCameraTarget+": ");
+                console.log(p);
+
+                p.add(targetPos);
+                camera.position.copy(p);
+                controls.target.copy(targetPos);
+            }
+
+            lastTargetPos=null;
+        }
+
+        function onResize(){
+
+            renderer.setSize($window.width()-5, $window.height()-5);
+
+            camera.aspect=$window.width()/$window.height();
+            camera.updateProjectionMatrix();
+        }
+
+        var trailsVisibles=true;
+
+        function toggleTrails(){
+            resetTrails();
+
+            trailsVisibles=!trailsVisibles;
+
+            trail1.visible=trailsVisibles;
+            trail2.visible=trailsVisibles;
+            trail3.visible=trailsVisibles;
+            resetTrails();
+        }
+
+        function resetTrails(){
+            trail1.reset();
+            trail2.reset();
+            trail3.reset();
+        }
+
+        function onModelsLoaded(){
+
+            $("body").keydown(function(e){
+
+                if (e.key=="c")   toggleCam();
+                if (e.key=="t")   toggleTrails();
+                if (e.key=="+")   {
+                    speed+=0.5;
+                    resetTrails();
+                }
+                if (e.key=="-")   {
+                    speed-=+0.5;
+                    resetTrails();
+                }
+
+            });
+
+            controls.update();
+/*
+            sol = new THREE.Mesh(new THREE.SphereGeometry( 15, 32, 32 ), materiales["sol"] );
+*/
+            sol = modelos["sol.dae"];
+            sol.material=materiales["sol"]
+
+            scene.add( sol );
+
+            tierra = modelos["tierra.dae"];
+            tierra.material=materiales["tierra"]
+            tierra.position.x=100;
+            scene.add(tierra);
+
+            iss = modelos["iss.dae"];
+            iss.material=materiales["iss"]
+            iss.position.x=90;
+            scene.add(iss);
+
+            luna = modelos["luna.dae"];
+            luna.material=materiales["luna"]
+            luna.position.x=130;
+            scene.add(luna);
+
+            apollo = modelos["apollo.dae"];
+            apollo.material=materiales["apollo"]
+            apollo.position.x=135;
+            scene.add(apollo);
+
+
+            render();
+        }
+
+        var t=0;
+        var frame=0;
+
+        function actualizarEscena(){
+
+             /* *********************************************************************************
+
+            Ejes de coordenadas y escalas
+            -----------------------------
+
+            La grilla esta definida en el plano XZ, el eje +Y es normal al plano.
+            Cada celda de la grilla mida 20x20 unidades
+
+            Consigna
+            ---------
+
+            Definir las matrices de transformacion de la Tierra, la Luna, la Estacion Espacial (ISS) y la nave Apollo,
+            para recrear los  movimientos reales de cada cuerpo.
+
+            Condiciones a cumplir:
+            ---------------------
+
+            1) NO ESTA PERMITIDO el uso de funciones trigonometricas (seno y coseno) para el cálculo de las orbitas,
+               deben usar matrices de rotación y traslación para resolverlo
+
+		        2) La tierra rota alrededor del sol sobre el plano XZ (ciclo anual)
+            3) La tierra tiene su eje inclinado de 23 grados respecto del eje +Y (arriba).
+            4) La tierra rota sobre su eje (ciclo del día)
+
+            IMPORTANTE: tener en cuenta la relación de la inclinacion de 23 grados, con las estaciones del año
+                        ver imágenes en la carpeta img/ para mas detalles
+
+		        4) Rotación de la luna alrededor de la tierra (una vuelta cada 30 días y siempre expone la misma cara hacia la tierra)
+            5) La nave Apolo debe estar ubicada sobre la cara oculta de la luna
+            6) La ISS debe orbital alrededor de la tierra pasando por encima y por debajo de la misma
+
+            La variable tiempo, son los segundos desde que arranco la aplicación
+
+
+            EDITAR EL CODIGO A CONTINUACION
+
+            *********************************************************************************
+            */
+
+            // Parametros de referencia de escala.
+            var distSolTierra = 149.6e6; // km
+            var distTierraLuna = 384.4e3; // km
+            var distTierraISS = 354; // km
+
+            // Calculo ahora la distnacia como una relación logarítmica entre la distancia más pequeña
+            // en el modelo real. La distancia no es representativa o a escala, pero tomo los valores reales
+            // y los hacemos logaritmicos.
+            var calcDistEscena = (distancia) => 5*maxGridPoints/maxGridDivisions*Math.log10(distancia/100);
+
+            // Constante de proporcionalidad para acelerar o deshacelerar la visualización.
+            var k = 1e5;
+
+            // La velocidad de rotación de la tierra es de 7.25 . 10^-5 rad/s
+            // que multiplicamos por la constante de proporcionalidad para la animación.
+            var velRotTierra = k * 7.27e-5;
+
+            // La velocidad de traslación de la tierra al rededor del sol no es uniforme
+            // devido a la forma elíptica de su órbita. Tomaremos el promedio. Segun wikipedia,
+            // la velocidad promedio de traslación de la tierra es de 29.8 km/s. La distancia de
+            // la tierra al sol, es de 152 millones de km en el tramo más largo, y de 147 millones
+            // de km en el más corto. El promedio es 149.5 millones de kilometros, y el cociente entre
+            // la velocidad media y este valor, nos da que la velocidad "angular" promedio es:
+            //    199.33 . 10^-9 rad/s
+            var velTrasTierra = k * 199.33e-9;
+
+            // creamos una matriz de referencia, que nos sirva para guiar todos los objetos.
+            // Como todos en teoría giran al rededor de la tierra, vamos a hacer que el eje de referencia
+            // gire al rededor del sol como debería hacerlo la tierra. A partir de este eje vamos a calcular
+            // el resto de las transformaciones a aplicar a el resto de los objetos.
+            var m0 = mat4.create();
+
+            // hacemos que la matriz de referencia se traslade al rededor del sol a la misma velocidad
+            // que lo hace la tierra como calculamos en promedio.
+            mat4.rotate(m0, m0, velTrasTierra * tiempo, [0,1,0]);
+
+            // luego, hacemos este eje de referencia se aleje del sol una distancia logaritmica
+            // respecto de su valor real
+            mat4.translate(m0, m0,[calcDistEscena(distSolTierra),0,0]);
+
+            // tierra
+            m1=mat4.create();
+
+            // primero, aplicamos a la tierra la matriz de traslacion de referencia
+            mat4.translate(m1, m0, [0,0,0]);
+
+            // Para que la tierra se incline 23 grados siempre en la misma direccion
+            // corregimos primero la rotación generada para trasladar la tierra al rededor
+            // del sol, por la matriz m0. Rotamos exactamente la misma cantidad pero sobre
+            // el eje de la tierra
+            mat4.rotate(m1, m1, velTrasTierra * tiempo, [0,-1,0]);
+
+            // Aplicamos la inclinación de 23 grados respecto del eje
+            mat4.rotate(m1, m1, 2*Math.PI*23/360, [0, 0, 1]);
+
+            // ahora hacemos que la tierra rote sobre su eje a la velocidad de rotación
+            mat4.rotate(m1, m1, velRotTierra*tiempo, [0, 1, 0]);
+            setTransform(tierra,m1);
+
+            // luna
+            m2=mat4.create();
+
+            // primero, aplicamos a la luna la matriz de rotación de referencia
+            mat4.translate(m2, m0, [0, 0, 0]);
+
+            // hacemos que la luna gire al rededor de la tierra 1 vez cada 30 días.
+            // el dia en la tierra esta determinado por la velocidad de rotación de la misma
+            mat4.rotate(m2, m2, velRotTierra/30 * tiempo, [0,1,0]);
+
+            // pero para que la cuenta de bien, hay que restarle la velocidad de traslación de la tierra
+            // que ya tiene adicionada por parte de la matriz comun.
+            mat4.rotate(m2, m2, velTrasTierra * tiempo, [0,-1,0]);
+
+            // trasladamos la luna ahora una distancia equivalente a la real entre
+            // la tierra y la luna para posicionar el objeto en la escena.
+            mat4.translate(m2, m2,[calcDistEscena(distTierraLuna/10),0,0]);
+            setTransform(luna,m2);
+
+            // apollo
+            m3=mat4.create();
+
+            // traslado el objeto del apollo, desde el eje de la luna
+            // una distancia equivalente a los valores que se observan
+            // aproximadamente en el modelo (viendo los puntos). Y luego ajusto,
+            // más o menos a ojo para que quede el apolo "apoyado".
+            mat4.translate(m3,m2,[2.09,0,0]);
+
+            // giro el apollo en el plano Y-Z 90 grados, para que quede posicionado sobre la luna
+            mat4.rotate(m3,m3, Math.PI/2, [0,0,-1]);
+            setTransform(apollo,m3);
+
+            // iss
+            m4=mat4.create();
+
+            // primero, aplicamos a la ISS la matriz de rotación de referencia
+            mat4.translate(m4, m0, [0, 0, 0]);
+
+            // La ISS rota 16 veces al rededor de la tierra en lo que va de 1 día
+            // tienen 16 amaneceres y atardereces en el tiempo que la tierra da 1 giro.
+            // Pero para favorecer la visualización, vamos a hacer que gire 2 veces sobre la tierra
+            // de lo contrario es demasiado rapido para apreciarlo
+            mat4.rotate(m4, m4, velRotTierra * 16 / 8 * tiempo, [0, 0, 1]);
+
+            // y alejamos la ISS la distancia equivalente desde la tierra para posicionarla
+            mat4.translate(m4,m4,[calcDistEscena(distTierraISS),0,0]);
+            setTransform(iss,m4);
+
+            // !!!! y con esto terminan todos los requisitos.
+
+
+            // *********************************************************************************************
+
+            if (trail1)  trail1.pushPosition(tierra.localToWorld(new THREE.Vector3(0,0,0)));
+            if (trail2)  trail2.pushPosition(luna.localToWorld(new THREE.Vector3(0,0,0)));
+            if (trail3)  trail3.pushPosition(iss.localToWorld(new THREE.Vector3(0,0,0)));
+
+            frame++;
+
+        }
+
+        function setTransform(obj,m1){
+            obj.position.set(0,0,0);
+            obj.scale.set(1,1,1);
+            obj.rotation.set(0,0,0);
+            obj.updateMatrix();
+            obj.applyMatrix(f(m1));
+        }
+
+        function f(m1){
+
+            //console.log(m1[0]+" "+m1[4]+" "+m1[1]+" "+m1[5]);
+
+            var m2=new THREE.Matrix4();
+            m2.set(m1[0],m1[4],m1[8],m1[12],
+                    m1[1],m1[5],m1[9],m1[13],
+                    m1[2],m1[6],m1[10],m1[14],
+                    m1[3],m1[7],m1[11],m1[15]
+                    );
+
+            return m2;
+
+        }
+
+
+
+        function updateCameras(){
+
+                var tg=modelos[cameraTargets[currentCameraTarget]].localToWorld(new THREE.Vector3(0,0,0));
+                controls.target.copy(tg);
+                // console.log(t);
+                controls.update();
+
+                if (lastTargetPos!=null){
+                    delta=tg.clone();
+                    delta.sub(lastTargetPos);
+                    // console.log(delta);
+                    camera.position.add(delta);
+                }
+                lastTargetPos=tg;
+
+        }
+
+        function render() {
+            requestAnimationFrame(render);
+            updateCameras();
+
+            actualizarEscena();
+
+            tiempo+=0.1*speed*1/60;
+            renderer.render(scene, camera,false,false);
+            $("#display").html("speed:"+speed.toFixed(2)+"<br>camera target: "+cameraTargets[currentCameraTarget]);
+
+        }
+
+        start();
+        loadTextures();
+
+    </script>
+
+
+</body>
+</html>
