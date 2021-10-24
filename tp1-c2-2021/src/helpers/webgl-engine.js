@@ -41,10 +41,11 @@ export default class GLEngine {
       console.error(msg);
       alert(msg);
     }
-
-    this.init();
   }
 
+  /**
+   * Inicializa el engine de WebGL
+   */
   init() {
     if (!this.gl) {
       return console.error(
