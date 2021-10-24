@@ -1,5 +1,5 @@
-import fs_source from "raw-loader!./shaders/shader.frag";
-import vs_source from "raw-loader!./shaders/shader.vert";
+import fs_source from "./shaders/shader.frag";
+import vs_source from "./shaders/shader.vert";
 
 import GLEngine from "./helpers/webgl-engine";
 
