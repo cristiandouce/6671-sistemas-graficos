@@ -8,7 +8,7 @@ const config = {
   devtool: "eval",
   mode: "development",
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "estacion-espacial"),
     filename: "bundle.js",
   },
   devServer: {
@@ -16,7 +16,7 @@ const config = {
       paths: ["./src/**/*"],
     },
     static: {
-      directory: path.resolve(__dirname, "dist"),
+      directory: path.resolve(__dirname, "estacion-espacial"),
       watch: true,
     },
     port: 3000,
