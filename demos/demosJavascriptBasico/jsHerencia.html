@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Herencia</title>
+    <style>
+        *{
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+<script>
+	
+
+// POO en Javascript
+
+
+// Existen muchisimas formas de implementar herencia ... una de ellas (no necesariamente la mejor) es "Prototypal Inheritance"
+// Requiere definir la siguiente funcion que usaremos para vincular clase con subclase
+// Para el ejemplo definiremos una Clase Superior "Torre" y una Subclase "TorreRedonda"
+
+
+// Para profundizar en tema de constructores, ver el siguiente link 
+// http://addyosmani.com/resources/essentialjsdesignpatterns/book/#constructorpatternjavascript
+
+
+
+
+function inheritPrototype(child, parent) {
+
+	// basicamente, child copia a su prototype todas las propiedades del prototype de parent, pero conserva su propio constructor
+	// esta funcion debe ser aplicada sobre "funciones" contructoras, NO sobre instancias de objetos
+	
+    var copyOfParent = Object.create(parent.prototype); // Object.create, devuelve un objeto con las propiedades de aquel pasado por parámetro
+    													// Se copiaron todas las propiedades de parent.prototype ---> a ---> copyOfParent
+    
+    copyOfParent.constructor = child; 				    // pero nosotros queremos heredar todas las propiedades conservando el constructor original
+       														 
+    child.prototype = copyOfParent;   					// finalmente este es el nuevo prototype de child
+
+}
+
+
+// ************************* Defino la clase "Forma" ****************************
+
+function Forma (){
+
+
+	// atributos privados y publicos ************************
+
+	var posicionX=0; // es un atributo privado, NO puede ser accedido desde funciones definidas en Forma.prototype
+	var posicionY=0; // es un atributo privado, NO puede ser accedido desde funciones definidas en Forma.prototype
+		
+	this.rotacion=0; // es un atributo publico
+	this.escala=1;   // es un atributo publico
+
+
+	var resetearPosicion=function(){// es un método privado
+		posicionX=0;
+		posicionY=0;
+	}
+
+	var resetearRotacion=function(){
+		this.rotacion=0;
+	}
+	
+	this.mover=function(deltaX,deltaY){// es un método publico
+		posicionX+=deltaX;			   
+		posicionY+=deltaY;				
+	}
+
+	this.getPosicion=function(){ // es un metodo publico
+		return [posicionX,posicionY];
+	}
+
+	this.resetear=function(){
+		resetearPosicion();
+		resetearRotacion();
+	}
+
+	
+}
+
+
+// al declarar "duplicarEscala" en el prototype de Forma, 
+// existe una sola copia de "duplicarEscala" en memoria, 
+// para todos los objetos generados con la funcion Forma()
+
+// Desventaja: no se puede acceder a variables internas
+// como por ejemplo posicionX o posicionY
+// una solucion es no usar nunca variables privadas sino publicas
+// definidas como this.posicionX this.posicionY
+
+Forma.prototype.duplicarEscala=function(){ 
+	this.escala=this.escala*2;
+}
+
+Forma.prototype.rotar45Grados=function(){
+	this.rotacion+=45;		
+		
+}
+
+// ******************** Defino la Subclase Triangulo ***********************
+
+function Rectangulo(){
+
+	Forma.call(this); 	// Esto es fundamental!, tengo que llamar explicitamente al constructor de la clase padre
+						// Pero tengo que pasarle una referencia al objeto mismo ("this") 
+						// el metodo .call(contexto) sirve para llamar a cualquier función con un contexto especifico
+						// en este caso llamo a Forma() pero la funcion va a operar sobre el objeto que le paso como referencia
+
+   /*
+	 agrego cosas específicas de Rectangulo
+   */
+   
+   var ancho=0;
+   var alto=0;
+
+   this.color="";
+
+   var log=function(txt){ // es una funcion privada
+   		console.log("log() Rectangulo, "+txt);
+   }
+
+   this.setDimensiones=function(w,h){
+   		ancho=w;
+   		alto=h;
+   };
+
+   this.esCuadrado=function(){
+
+   		return (ancho==alto); 			// devuelve true o false
+   }
+
+   this.calcularArea=function(){
+   		var result=ancho*alto;
+   		log("se calculo el Area y dio "+result);
+   	 	return result;
+   }
+
+}
+
+inheritPrototype(Rectangulo, Forma);   // Defino la relacion de herencia,  
+									   // IMPORTANTE, tener cuidado en cuando se ejecuta esta función
+									   // porque va a sobreescribir Rectangulo.prototype
+									   // por eso hay que ejecutarla ANTES de definir las funciones 
+									   // especificas de Rectangulo.prototype									   
+
+
+Rectangulo.prototype.calcularDiagonal=function(){
+
+	// Aqui por ejemplo se puede ver la desventaja de definir un metodo en prototype
+	return "NO PUEDO ACCEDER a ancho y alto, por lo tanto no puedo calcularla";
+	
+}
+
+Rectangulo.prototype.esBlanco=function(){
+
+	return (this.color=="blanco");
+}
+
+
+
+
+// *********   Hagamos una pruebas  ***************
+
+console.log("****** Probemos Forma **********");
+
+var f1=new Forma();
+
+console.log(">> f1.rotacion="+f1.rotacion);
+console.log(">> f1.escala="+f1.escala);
+console.log(">> f1.posicionX="+f1.posicionX+"  es un atributo privado, no lo puedo acceder !!!");
+
+f1.mover(10,5);
+
+console.log(">> ejecuto f1.mover(10,5)");
+console.log(">> f1.getPosicion()="+f1.getPosicion());
+
+f1.resetear();
+
+console.log(">> ejecuto f1.resetear()");
+console.log(">> f1.getPosicion()="+f1.getPosicion());
+console.log("                       ");
+
+
+console.log("****** Probemos Rectangulo **********");
+
+
+var r1=new Rectangulo();
+
+r1.setDimensiones(35,40);
+console.log(">> r1.setDimensiones(35,40)");
+
+console.log(">> r1.calcularArea()="+r1.calcularArea());
+console.log(">> r1.esCuadrado()="+r1.esCuadrado());
+
+console.log(">> r1.rotacion="+r1.rotacion);
+console.log(">> r1.escala="+r1.escala);
+
+console.log(">> r1.rotacion="+r1.rotacion+ "    es un atributo publico heredado de Forma");
+r1.rotar45Grados();
+console.log(">> ejecuto r1.rotar45Grados()      es un metodo hereado de Forma");
+console.log(">> r1.rotacion="+r1.rotacion);
+
+console.log("                       ");
+
+
+</script>
+
+
+<h3>Para ver el resultado de la ejecución del Script abrir la consola con F12</h3>
+
+<pre style="margin:20px;border:1px solid black;background-color:#EEEEEE; padding:10px;">
+
+
+// POO en Javascript
+
+
+// Existen muchisimas formas de implementar herencia ... una de ellas (no necesariamente la mejor) es "Prototypal Inheritance"
+// Requiere definir la siguiente funcion que usaremos para vincular clase con subclase
+// Para el ejemplo definiremos una Clase Superior "Torre" y una Subclase "TorreRedonda"
+
+
+// Para profundizar en tema de constructores, ver el siguiente link 
+// http://addyosmani.com/resources/essentialjsdesignpatterns/book/#constructorpatternjavascript
+
+
+
+
+function inheritPrototype(child, parent) {
+
+	// basicamente, child copia a su prototype todas las propiedades del prototype de parent, pero conserva su propio constructor
+	// esta funcion debe ser aplicada sobre "funciones" contructoras, NO sobre instancias de objetos
+	
+
+    var copyOfParent = Object.create(parent.prototype); 
+    // Object.create, devuelve un objeto con las propiedades de aquel pasado por parámetro
+    // Se copiaron todas las propiedades de parent.prototype ---> a ---> copyOfParent
+    
+    copyOfParent.constructor = child; 				    
+    // pero nosotros queremos heredar todas las propiedades conservando el constructor original
+    
+
+    child.prototype = copyOfParent;   					
+    // finalmente este es el nuevo prototype de child
+
+}
+
+
+// ************************* Defino la clase "Forma" ****************************
+
+function Forma (){
+
+
+	// atributos privados y publicos ************************
+
+	var posicionX=0; // es un atributo privado, NO puede ser accedido desde funciones definidas en Forma.prototype
+	var posicionY=0; // es un atributo privado, NO puede ser accedido desde funciones definidas en Forma.prototype
+		
+	this.rotacion=0; // es un atributo publico
+	this.escala=1;   // es un atributo publico
+
+
+	var resetearPosicion=function(){// es un método privado
+		posicionX=0;
+		posicionY=0;
+	}
+
+	var resetearRotacion=function(){
+		this.rotacion=0;
+	}
+
+	
+	this.mover=function(deltaX,deltaY){// es un método publico
+		posicionX+=deltaX;			   
+		posicionY+=deltaY;				
+	}
+
+	this.getPosicion=function(){ // es un metodo publico
+		return [posicionX,posicionY];
+	}
+
+	this.resetear=function(){
+		resetearPosicion();
+		resetearRotacion();
+	}
+
+	
+}
+
+
+// al declarar "duplicarEscala" en el prototype de Forma, 
+// existe una sola copia de "duplicarEscala" en memoria, 
+// para todos los objetos generados con la funcion Forma()
+
+// Desventaja: no se puede acceder a variables internas
+// como por ejemplo posicionX o posicionY
+// una solucion es no usar nunca variables privadas sino publicas
+// definidas como this.posicionX this.posicionY
+
+Forma.prototype.duplicarEscala=function(){ 
+	this.escala=this.escala*2;
+}
+
+Forma.prototype.rotar45Grados=function(){
+	this.rotacion+=45;		
+		
+}
+
+// ******************** Defino la Subclase Triangulo ***********************
+
+function Rectangulo(){
+
+	Forma.call(this); 	// Esto es fundamental!, tengo que llamar explicitamente al constructor de la clase padre
+						// Pero tengo que pasarle una referencia al objeto mismo ("this") 
+						// el metodo .call(contexto) sirve para llamar a cualquier función con un contexto especifico
+						// en este caso llamo a Forma() pero la funcion va a operar sobre el objeto que le paso como referencia
+
+   /*
+	 agrego cosas específicas de Rectangulo
+   */
+   
+   var ancho=0;
+   var alto=0;
+
+   this.color="";
+
+   var log=function(txt){ // es una funcion privada
+   		console.log("log() Rectangulo, "+txt);
+   }
+
+   this.setDimensiones=function(w,h){
+   		ancho=w;
+   		alto=h;
+   };
+
+   this.esCuadrado=function(){
+
+   		return (ancho==alto); 			// devuelve true o false
+   }
+
+   this.calcularArea=function(){
+   		var result=ancho*alto;
+   		log("se calculo el Area y dio "+result);
+   	 	return result;
+   }
+
+}
+
+inheritPrototype(Rectangulo, Forma);   // Defino la relacion de herencia,  
+									   // IMPORTANTE, tener cuidado en cuando se ejecuta esta función
+									   // porque va a sobreescribir Rectangulo.prototype
+									   // por eso hay que ejecutarla ANTES de definir las funciones 
+									   // especificas de Rectangulo.prototype									   
+
+
+Rectangulo.prototype.calcularDiagonal=function(){
+
+	// Aqui por ejemplo se puede ver la desventaja de definir un metodo en prototype
+	return "NO PUEDO ACCEDER a ancho y alto, por lo tanto no puedo calcularla";
+	
+}
+
+Rectangulo.prototype.esBlanco=function(){
+
+	return (this.color=="blanco");
+}
+
+
+
+
+// *********   Hagamos una pruebas  ***************
+
+console.log("****** Probemos Forma **********");
+
+var f1=new Forma();
+
+console.log(">> f1.rotacion="+f1.rotacion);
+console.log(">> f1.escala="+f1.escala);
+console.log(">> f1.posicionX="+f1.posicionX+"  es un atributo privado, no lo puedo acceder !!!");
+
+f1.mover(10,5);
+
+console.log(">> ejecuto f1.mover(10,5)");
+console.log(">> f1.getPosicion()="+f1.getPosicion());
+
+f1.resetear();
+
+console.log(">> ejecuto f1.resetear()");
+console.log(">> f1.getPosicion()="+f1.getPosicion());
+console.log("                       ");
+
+
+console.log("****** Probemos Rectangulo **********");
+
+
+var r1=new Rectangulo();
+
+r1.setDimensiones(35,40);
+console.log(">> r1.setDimensiones(35,40)");
+
+console.log(">> r1.calcularArea()="+r1.calcularArea());
+console.log(">> r1.esCuadrado()="+r1.esCuadrado());
+
+console.log(">> r1.rotacion="+r1.rotacion);
+console.log(">> r1.escala="+r1.escala);
+
+console.log(">> r1.rotacion="+r1.rotacion+ "    es un atributo publico heredado de Forma");
+r1.rotar45Grados();
+console.log(">> ejecuto r1.rotar45Grados()      es un metodo hereado de Forma");
+console.log(">> r1.rotacion="+r1.rotacion);
+
+console.log("                       ");
+
+
+
+</pre>
+
+
+
+
+</body>

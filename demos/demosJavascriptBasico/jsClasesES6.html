@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Herencia</title>
+    <style>
+        *{
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h3>Para ver el resultado de la ejecución del Script abrir la consola con F12</h3>
+    <script>    
+
+        class Point {
+            
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+
+            static staticMethod() {
+                return 'static method result';
+            }
+
+            toString() {
+                return `(${this.x}, ${this.y})`;
+            }
+        }
+
+
+        class ColorPoint extends Point {
+            constructor(x, y, color) {
+                super(x, y); // (A)
+                this.color = color;
+            }
+            toString() {
+                return super.toString() + ' in ' + this.color; // (B)
+            }
+        }
+
+
+        var p = new Point(25, 8);
+        console.log(p.toString());
+
+
+        const cp = new ColorPoint(25, 8, 'green');
+        console.log(cp.toString());
+
+
+
+        class Person {
+            constructor(name) {
+                this.name = name;
+            }
+            toString() {
+                return `Person named ${this.name}`;
+            }
+            static logNames(persons) {
+                for (const person of persons) {
+                    console.log(person.name);
+                }
+            }
+        }
+
+        class Employee extends Person {
+            constructor(name, title) {
+                super(name);
+                this.title = title;
+            }
+            toString() {
+                return `${super.toString()} (${this.title})`;
+            }
+        }
+
+        const jane = new Employee('Jane', 'CTO');
+        console.log(jane.toString()); // Person named Jane (CTO)
+
+
+
+    </script>
+</body>
+</html>

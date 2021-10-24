@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8"> 
+    <style>
+        *{
+            font-family: monospace;
+        }
+    </style>       
+</head>
+<body>
+<script>
+
+    var a=1; // estan definidas en el scope global
+    var b=2;
+
+    function f1(){
+        
+        var count=0;
+        count++;
+        
+        function add(v){
+            return v+1;
+        }
+        
+        function sub(v){
+            return v-1;
+        }
+
+        console.log("f1() count= "+count);	        
+        console.log("f1() c= "+c);	
+        // c viene del scope global, no importa que se haya definido luego de definir f1, 
+        // lo que importa es que f1 es invocada luego de definir c=3
+                
+        console.log("add(a) "+add(a));
+        console.log("sub(b) "+sub(b));	
+        console.log("add(c) "+add(c));	        
+        c++;
+    };
+
+    var c=3;
+
+    f1();
+    console.log("c="+c);
+    f1();
+</script>
+
+<h3>Para ver el resultado de la ejecución del Script abrir la consola con F12</h3>
+
+<pre style="margin:20px;border:1px solid black;background-color:#EEEEEE; padding:10px;">
+
+var a=1; // estan definidas en el scope global
+var b=2;
+
+function f1(){
+	
+	var count=0;
+	
+	function add(v){
+		return v+1;
+	}
+	
+	function sub(v){
+		return v-1;
+	}
+
+	console.log("f1() count= "+count);	
+	
+	console.log("f1() c= "+c);	
+	// c viene del scope global, no importa que se haya definido luego de definir f1, 
+	// lo que importa es que f1 es invocada luego de definir c=3
+	
+	console.log("add(a) "+add(a));
+	console.log("sub(b) "+sub(b));	
+	console.log("add(c) "+add(c));	
+	
+	count++;
+};
+var c=3;
+f1();
+console.log("c="+c);
+
+f1();
+</pre>
+
+<script>
+
+    var c=10;
+</script>
+</body>

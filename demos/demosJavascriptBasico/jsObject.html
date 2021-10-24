@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Object</title>
+    <style>
+        *{
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+
+	var a="999";
+
+	function UnObjeto(valor1, valor2, valor3){
+		
+		var varPrivada1="secreto 1";
+		var varPrivada2="secreto 2"
+		
+		function fnPrivada(a,b){
+			return a*b;
+		}
+
+		this.metodoPublico1=function(param1, param2){
+			//
+			var a=1;
+			var b=2;
+			
+			console.log("  this.metodoPublico1, a="+a);
+			var resultado=param1+" "+param2+" "+a+" "+b+" valores de variables privadas:"+varPrivada1+" "+varPrivada2;
+			
+			return resultado;
+		}
+		
+		this.metodoPublico2=function(){
+			
+			var resultado=" ******  "+this.metodoPublico1("manzanas","peras")+"  6x4="+fnPrivada(6,4);
+			
+			return resultado;
+        }
+        
+	};
+
+
+
+	var o = new UnObjeto();
+	
+
+	console.log("a="+a);	
+	console.log("o.metodoPublico1: "+ o.metodoPublico1("hola","que tal?"));	
+	console.log("o.metodoPublico2: "+o.metodoPublico2());
+	
+	
+	
+</script>
+<h3>Para ver el resultado de la ejecución del Script abrir la consola con F12</h3>
+
+</body>
+</html>

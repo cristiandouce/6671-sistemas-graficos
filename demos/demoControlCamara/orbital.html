@@ -1,0 +1,208 @@
+<html>
+<head>
+    <title></title>
+    <script src="js/three.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+
+    <style>
+
+        *{
+            font-family: Arial, Helvetica, sans-serif;   
+        }
+        #log {
+            position: absolute;
+            top:50px;
+            left: 100px;
+            z-index: 300;
+        }
+
+        #contenedor3d{
+            position: relative;
+            width: 1600px;
+            height: 800px;
+            border: 1px solid black;
+            margin: auto;
+
+        }
+
+    </style>
+
+
+</head>
+
+<body>
+
+
+<div id="contenedor3d">
+    <div id="log">
+        DeltaX : <span id="valorDeltaX"></span> <br/>
+        DeltaY : <span id="valorDeltaY"></span> <br/>
+        Alfa : <span id="valorAlfa"></span> <br/>
+        Beta : <span id="valorBeta"></span> <br/>
+    </div>
+    
+    
+
+</div>
+
+<script>
+
+    // Creamos la escena 3D
+
+    var jqDomElement=$("#contenedor3d");
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+    camera.position.set(-8,10,-8);
+    camera.lookAt(new THREE.Vector3(0,0,0));
+
+    var renderer = new THREE.WebGLRenderer({preserveDrawingBuffer:true,autoClear:false});
+
+    var ancho=jqDomElement.width();
+    var alto=jqDomElement.height();
+
+    renderer.setSize(ancho,alto);
+
+    renderer.setClearColor( 0xffffff, 1 );
+
+    
+
+    jqDomElement.get(0).appendChild(renderer.domElement); 
+
+    
+
+    var matRojo = new THREE.MeshPhongMaterial( // definimos un matRojo
+            {
+                ambient: 0x882222, 			 // color ambiente
+                color:0xFF5555,				 // color difuso
+                specular:0xFFFF,			 // color especular
+                shininess:30,				 // concentración del brillo especular
+
+            });
+
+    var matAzul = new THREE.MeshPhongMaterial( // definimos un matRojo
+            {
+                ambient: 0x0000FF, 			 // color ambiente
+                color:0x0000FF,				 // color difuso
+                specular:0xFFFFFF,			 // color especular
+                shininess:30,				 // concentración del brillo especular
+
+            });
+
+
+
+    var matGris = new THREE.MeshPhongMaterial( // definimos un matRojo
+            {
+                ambient: 0x0000FF, 			 // color ambiente
+                color:0x777777,				 // color difuso
+                side:THREE.DoubleSide
+                
+
+            });			
+			
+	var target = new THREE.Mesh( new THREE.BoxGeometry( 0.5, 0.5, 0.5 ), matRojo);
+    var origin = new THREE.Mesh( new THREE.BoxGeometry( 0.7, 0.7, 0.7 ), matAzul);
+	var sombra = new THREE.Mesh(new THREE.PlaneGeometry( 0.7, 0.7, 2 ), matGris);
+	sombra.rotation.x=Math.PI/2;
+
+    
+    scene.add(target); 
+    
+    scene.add(origin);
+	scene.add(sombra);
+
+
+    var pointLight = new THREE.PointLight( 0xffffff, 1, 1000 );
+    pointLight.position.set( -300, 0,-300  );
+    scene.add( pointLight );
+
+    var pointLigh2 = new THREE.PointLight( 0xffffff, 2, 1000 );
+    pointLigh2.position.set( 0, 400, -300 );
+    scene.add( pointLigh2 );
+
+	var size = 10; var step = 10; var gridHelper = new THREE.GridHelper( size, step ); scene.add( gridHelper );
+	
+
+   // manejo de mouse y teclado
+
+
+
+    var previousClientX = 0;
+    var previousClientY = 0;
+    var radio = 5;
+    var alfa = 0;
+    var beta = Math.PI/2;
+    var factorVelocidad = 0.01;
+
+    var isMouseDown = false;
+    var actualEvent;
+
+	var mouse = {x: 0, y: 0};
+
+    $("#contenedor3d").mousemove(function(e){ 
+		mouse.x = e.clientX || e.pageX; 
+		mouse.y = e.clientY || e.pageY 
+	});
+	
+    $('#contenedor3d').mousedown(function(event){		
+        isMouseDown = true;        
+    });
+
+    $('body').mouseup(function(event){
+		isMouseDown = false;		
+    });
+
+    $('body').on("keydown",function(event){
+        console.log(event);
+
+        if (event.keyCode==67){
+            alert ("presionaron la tecla C !!!")
+        }
+             
+    });    
+
+    var render = function () {
+
+
+        origin.position.set( radio * Math.sin(alfa) * Math.sin(beta), radio * Math.cos(beta) ,radio * Math.cos(alfa) * Math.sin(beta)  );		
+		sombra.position.set( radio * Math.sin(alfa) * Math.sin(beta), 0 ,radio * Math.cos(alfa) * Math.sin(beta)  );
+
+        if(isMouseDown) rotarCuboAzul();
+        requestAnimationFrame(render);
+        renderer.render(scene, camera,false,false);
+    };
+
+    function rotarCuboAzul()
+    {
+        var deltaX=0;
+        var deltaY=0;
+
+
+        if (previousClientX) deltaX = mouse.x - previousClientX;
+        if (previousClientY) deltaY = mouse.y - previousClientY;
+
+        previousClientX = mouse.x;
+        previousClientY = mouse.y;
+
+        alfa = alfa + deltaX * factorVelocidad;
+        beta = beta + deltaY * factorVelocidad;
+
+		if (beta<0) beta=0;
+		if (beta>Math.PI) beta=Math.PI;
+
+        
+        $('#valorDeltaX').html(deltaX);
+        $('#valorDeltaY').html(deltaY);
+
+        $('#valorAlfa').html(alfa.toFixed(2));
+        $('#valorBeta').html(beta.toFixed(2));
+    }
+
+    rotarCuboAzul();
+    render();
+</script>
+
+
+</body>
+</html>

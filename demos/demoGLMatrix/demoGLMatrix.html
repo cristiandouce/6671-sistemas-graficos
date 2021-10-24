@@ -1,0 +1,85 @@
+<html>
+	<head>
+		<title></title>
+    </head>
+    <style>
+
+        *{
+            font-size: 125%;
+            font-family: Arial;
+        }
+    </style>    
+
+	<body>
+		<script src="gl-matrix-3.3.0.js"></script>
+		
+		<h3>Librería glMatrix version 3.3.0</h3>
+		<p> ver resultados en la consola (F12)</p>
+		
+		<script>
+
+            /*
+                Documentacion: http://glmatrix.net/docs/
+
+                Objeto raiz: glMatrix
+                Objetos principales: mat2, mat3, mat4, vec2, vec3, vec4
+
+            */
+
+            var vec3=glMatrix.vec3;  //defino vec3 para no tener que escribir glMatrix.vec3
+            var mat4=glMatrix.mat4;
+
+            // creo 5 matrices de 4x4 (son inicializadas como matrices identidad)
+			var m1=mat4.create();            
+			var m2=mat4.create();
+			var m3=mat4.create();
+			var m4=mat4.create();
+			var m5=mat4.create();
+
+            // m2 = MatrizTraslacion(2,2,2) * m1
+			mat4.translate(m2,m1,[2,2,2]);
+
+			console.log("m2:");
+			console.dir(m2);
+
+            // m3 = MatrizRotacion(45,[0,1,0]) * m3
+			mat4.rotate(m3,m3,Math.PI/4,[0,1,0]);
+			console.log("m3: rotacion 45 grados respecto del eje +Y");
+			console.log(m3);
+
+            // m4 = MatrizEscalado(3,3,3) * m4
+			mat4.scale(m4,m4,[3,3,3]);		
+			console.log("m4: escalado x 3");
+			console.log(m4);
+			
+            // m5 = MatrizEscalado([2,2,2]) *  MatrizTraslacion([30,30,30]) * m5
+			var m5=mat4.scale(m5,m5,[2,2,2]);
+			var m5=mat4.translate(m5,m5,[30,30,30]);
+			
+			console.log("m5: Mescalado x Mtraslacion");
+			console.log(m5);
+
+
+            // creamos "pos" como vec3 a partir de valores
+			var pos=vec3.fromValues(1,1,1);
+            // creamos "pos2" como un nuevo vec3=(0,0,0):
+			var pos2=vec3.create();
+
+            // transformamos pos con m2;
+			vec3.transformMat4(pos,pos,m2);
+
+			console.log("m2 * pos:");
+			console.log(pos);		
+            
+            // transformamos pos con m5;
+			vec3.transformMat4(pos2,pos2,m5);
+
+            console.log("m5 * pos2:");
+            console.log(pos2);		
+
+
+		</script>
+
+
+	</body>
+</html>
