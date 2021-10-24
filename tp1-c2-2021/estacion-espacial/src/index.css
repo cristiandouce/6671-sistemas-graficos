@@ -1,0 +1,12 @@
+body {
+  background-color: grey;
+}
+canvas {
+  background-color: white;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+textarea {
+  background-color: black;
+}

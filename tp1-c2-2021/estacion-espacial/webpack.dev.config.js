@@ -48,7 +48,7 @@ const config = {
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new CopyPlugin({
-      patterns: [{ from: "src/index.html" }],
+      patterns: [{ from: "src/index.html" }, { from: "src/index.css" }],
     }),
   ],
 };
