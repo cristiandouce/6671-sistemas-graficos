@@ -208,9 +208,6 @@ export default class Objeto3D {
   drawScene() {
     const { gl, glProgram } = this.engine;
 
-    debugger;
-    console.log(this.buffers);
-
     const vertexPositionAttribute = gl.getAttribLocation(
       glProgram,
       "aVertexPosition"

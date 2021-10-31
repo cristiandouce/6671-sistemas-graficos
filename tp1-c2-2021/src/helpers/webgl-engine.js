@@ -41,6 +41,8 @@ export default class GLEngine {
     this.canvas = canvas;
     this.shaders = shaders;
     try {
+      this.canvas.width = "1280";
+      this.canvas.height = "1024";
       this.gl = this.canvas.getContext("webgl");
     } catch (error) {
       const msg = `Error al inicializar el WebGL Engine: ${error.message}`;
@@ -62,8 +64,6 @@ export default class GLEngine {
 
     this.setup();
     this.initShaders();
-    this.setupBuffers();
-    this.setupVertexShaderMatrix();
     this.tick();
   }
 
@@ -137,115 +137,6 @@ export default class GLEngine {
     return shader;
   }
 
-  setupBuffers() {
-    const pos = [];
-    const normal = [];
-    const r = 2;
-    const rows = 128;
-    const cols = 256;
-
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        const alfa = (j / (cols - 1)) * Math.PI * 2;
-        const beta = (0.1 + (i / (rows - 1)) * 0.8) * Math.PI;
-
-        const p = this.getPos(alfa, beta);
-
-        pos.push(p[0]);
-        pos.push(p[1]);
-        pos.push(p[2]);
-
-        const n = this.getNrm(alfa, beta);
-
-        normal.push(n[0]);
-        normal.push(n[1]);
-        normal.push(n[2]);
-      }
-    }
-
-    console.log("ENGINE_POSITION_BUFFER", pos);
-
-    this.trianglesVerticeBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.trianglesVerticeBuffer);
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      new Float32Array(pos),
-      this.gl.STATIC_DRAW
-    );
-
-    this.trianglesNormalBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.trianglesNormalBuffer);
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      new Float32Array(normal),
-      this.gl.STATIC_DRAW
-    );
-
-    const index = [];
-
-    for (let i = 0; i < rows - 1; i++) {
-      index.push(i * cols);
-      for (let j = 0; j < cols - 1; j++) {
-        index.push(i * cols + j);
-        index.push((i + 1) * cols + j);
-        index.push(i * cols + j + 1);
-        index.push((i + 1) * cols + j + 1);
-      }
-      index.push((i + 1) * cols + cols - 1);
-    }
-
-    this.trianglesIndexBuffer = this.gl.createBuffer();
-    this.trianglesIndexBuffer.number_vertex_point = index.length;
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.trianglesIndexBuffer);
-    this.gl.bufferData(
-      this.gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(index),
-      this.gl.STATIC_DRAW
-    );
-  }
-
-  getPos(alfa, beta) {
-    const r = 2;
-    const nx = Math.sin(beta) * Math.sin(alfa);
-    const ny = Math.sin(beta) * Math.cos(alfa);
-    const nz = Math.cos(beta);
-
-    const g = beta % 0.5;
-    const h = alfa % 1;
-    let f = 1;
-
-    if (g < 0.25) f = 0.95;
-    if (h < 0.5) f = f * 0.95;
-
-    const x = nx * r * f;
-    const y = ny * r * f;
-    const z = nz * r * f;
-
-    return [x, y, z];
-  }
-
-  getNrm(alfa, beta) {
-    const p = this.getPos(alfa, beta);
-    const v = vec3.create();
-    vec3.normalize(v, p);
-
-    const delta = 0.05;
-    const p1 = this.getPos(alfa, beta);
-    const p2 = this.getPos(alfa, beta + delta);
-    const p3 = this.getPos(alfa + delta, beta);
-
-    const v1 = vec3.fromValues(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
-    const v2 = vec3.fromValues(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
-
-    vec3.normalize(v1, v1);
-    vec3.normalize(v2, v2);
-
-    const n = vec3.create();
-    vec3.cross(n, v1, v2);
-    vec3.scale(n, n, -1);
-    return n;
-  }
-
   // esto de momento parece pertenecer al engine, pq tiene conocimiento no solo
   // de la matriz de modelo del objeto, sino también de la de vista y projección
   // que son necesarias para dibujar la escena (globales).
@@ -274,7 +165,6 @@ export default class GLEngine {
       objectModelMatrix || modelMatrix
     );
 
-    console.log("lalala", objectModelMatrix || modelMatrix);
     gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
     gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
     gl.uniformMatrix4fv(normalMatrixUniform, false, normalMatrix);
@@ -282,56 +172,7 @@ export default class GLEngine {
 
   tick() {
     requestAnimationFrame(this.tick.bind(this));
-    // this.granada.draw();
-    // setTimeout(() => {
-    //   this.granada.draw();
-    // }, 5000);
-    this.drawScene();
-    // this.animate();
-  }
-
-  drawScene() {
-    const { gl, glProgram } = this;
-    this.setupVertexShaderMatrix();
-
-    console.log("ENGINE", this);
-    const vertexPositionAttribute = gl.getAttribLocation(
-      glProgram,
-      "aVertexPosition"
-    );
-    gl.enableVertexAttribArray(vertexPositionAttribute);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.trianglesVerticeBuffer);
-    gl.vertexAttribPointer(
-      vertexPositionAttribute,
-      this.granada.buffers.position.itemSize,
-      gl.FLOAT,
-      false,
-      0,
-      0
-    );
-
-    const vertexNormalAttribute = gl.getAttribLocation(
-      glProgram,
-      "aVertexNormal"
-    );
-    gl.enableVertexAttribArray(vertexNormalAttribute);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.trianglesNormalBuffer);
-    gl.vertexAttribPointer(
-      vertexNormalAttribute,
-      this.granada.buffers.normal.itemSize,
-      gl.FLOAT,
-      false,
-      0,
-      0
-    );
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.trianglesIndexBuffer);
-    gl.drawElements(
-      gl.TRIANGLE_STRIP,
-      this.trianglesIndexBuffer.number_vertex_point,
-      gl.UNSIGNED_SHORT,
-      0
-    );
+    this.granada.draw();
   }
 
   // TODO: falta ver donde incorporar esto, si en objeto, o en engine...

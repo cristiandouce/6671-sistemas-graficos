@@ -19,10 +19,10 @@ export default class Superficie {
     const textureBuffer = [];
     const indexBuffer = [];
 
-    for (let i = 0; i <= rows; i++) {
-      for (let j = 0; j <= columns; j++) {
-        const u = j / columns;
-        const v = i / rows;
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
+        const u = j / (columns - 1);
+        const v = i / (rows - 1);
 
         const pos = this.getPosicion(u, v);
 
@@ -54,7 +54,6 @@ export default class Superficie {
       indexBuffer.push((i + 1) * columns + columns - 1);
     }
 
-    console.log("GRANADA_POSITION_BUFFER", positionBuffer);
     return {
       position: positionBuffer,
       normal: normalBuffer,

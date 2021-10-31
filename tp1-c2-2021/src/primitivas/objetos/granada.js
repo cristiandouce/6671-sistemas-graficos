@@ -27,11 +27,15 @@ export default class Granada extends Objeto3D {
       [1.0, 0.0, 1.0]
     );
 
-    super.draw(m);
+    mat4.identity(this.engine.normalMatrix);
+    mat4.multiply(
+      this.engine.normalMatrix,
+      this.engine.viewMatrix,
+      this.modelMatrix
+    );
+    mat4.invert(this.engine.normalMatrix, this.engine.normalMatrix);
+    mat4.transpose(this.engine.normalMatrix, this.engine.normalMatrix);
 
-    // mat4.identity(this.normalMatrix);
-    // mat4.multiply(this.normalMatrix, this.viewMatrix, this.modelMatrix);
-    // mat4.invert(this.normalMatrix, this.normalMatrix);
-    // mat4.transpose(this.normalMatrix, this.normalMatrix);
+    super.draw(m);
   }
 }
