@@ -18,5 +18,3 @@ const application = new Application({
 });
 
 application.init();
-
-console.log(engine);

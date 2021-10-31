@@ -1,5 +1,11 @@
 import { mat4, vec3 } from "gl-matrix";
+import Granada from "../primitivas/objetos/granada";
 
+// TODO: revisar las responsabilidades de esta clase
+// tranquilamente podría llamarla "Mundo" o simplemente "Programa"
+// debería tener la posibilidad de agregar la cámara y la raiz del arbol
+// de objetos de mi mundo a esta clase, y asi controlar todo.
+// Ya que los objetos dependen del Engine para dibujarse...
 export default class GLEngine {
   /** @type {HTMLCanvasElement} */
   canvas = null;
@@ -52,11 +58,12 @@ export default class GLEngine {
         "Imposible inicializar el engine sin el WebGL context"
       );
     }
+    this.granada = new Granada(this);
 
     this.setup();
     this.initShaders();
-    this.setupBuffers();
-    this.setupVertexShaderMatrix();
+    // this.setupBuffers();
+    // this.setupVertexShaderMatrix();
     this.tick();
   }
 
@@ -237,9 +244,17 @@ export default class GLEngine {
     return n;
   }
 
-  setupVertexShaderMatrix() {
+  // esto de momento parece pertenecer al engine, pq tiene conocimiento no solo
+  // de la matriz de modelo del objeto, sino también de la de vista y projección
+  // que son necesarias para dibujar la escena (globales).
+  // Lo que hace es preparar las variables uniform para los shaders, asignando
+  // las matrices de mi programa, relativas al objeto que estoy por dibujar ahora.
+  setupVertexShaderMatrix(objectModelMatrix) {
     const { gl, glProgram, modelMatrix, viewMatrix, projMatrix, normalMatrix } =
       this;
+
+    // obtengo referencias a las matrices del programa, del modelo a dibujar,
+    // de la vista, projección y normal...
     const modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
     const viewMatrixUniform = gl.getUniformLocation(glProgram, "viewMatrix");
     const projMatrixUniform = gl.getUniformLocation(glProgram, "projMatrix");
@@ -248,22 +263,36 @@ export default class GLEngine {
       "normalMatrix"
     );
 
-    gl.uniformMatrix4fv(modelMatrixUniform, false, modelMatrix);
+    // Y luego asigno a estas variables uniformes de los shaders a las matrices de
+    // lo que estoy por dibujar.
+    gl.uniformMatrix4fv(
+      modelMatrixUniform,
+      false,
+      // temporal, reubicando las responsabildiades
+      objectModelMatrix || modelMatrix
+    );
+
+    console.log("lalala", objectModelMatrix || modelMatrix);
     gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
     gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
     gl.uniformMatrix4fv(normalMatrixUniform, false, normalMatrix);
   }
 
   tick() {
-    requestAnimationFrame(this.tick.bind(this));
-    this.drawScene();
-    this.animate();
+    // requestAnimationFrame(this.tick.bind(this));
+    this.granada.draw();
+    setTimeout(() => {
+      this.granada.draw();
+    }, 5000);
+    // this.drawScene();
+    // this.animate();
   }
 
   drawScene() {
     const { gl, glProgram } = this;
     this.setupVertexShaderMatrix();
 
+    console.log("ENGINE", this);
     this.vertexPositionAttribute = gl.getAttribLocation(
       glProgram,
       "aVertexPosition"
@@ -303,6 +332,9 @@ export default class GLEngine {
     );
   }
 
+  // TODO: falta ver donde incorporar esto, si en objeto, o en engine...
+  // ... y a que tiempos. PQ el angulo de rotacion, y la animación en sí
+  // son parte del objeto, pero el resto de las matrices son globales...
   animate() {
     this.rotate_angle += 0.01;
     mat4.identity(this.modelMatrix);
