@@ -1,4 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
+import Esfera from "../primitivas/objetos/esfera";
 import Granada from "../primitivas/objetos/granada";
 
 // TODO: revisar las responsabilidades de esta clase
@@ -17,17 +18,11 @@ export default class GLEngine {
   glProgram = null;
 
   /** @type {import("gl-matrix").ReadonlyMat4} */
-  modelMatrix = mat4.create();
   viewMatrix = mat4.create();
+  /** @type {import("gl-matrix").ReadonlyMat4} */
   projMatrix = mat4.create();
+  /** @type {import("gl-matrix").ReadonlyMat4} */
   normalMatrix = mat4.create();
-  rotate_angle = -1.57078;
-
-  vertexPositionAttribute = null;
-  trianglesVerticeBuffer = null;
-  vertexNormalAttribute = null;
-  trianglesNormalBuffer = null;
-  trianglesIndexBuffer = null;
 
   /**
    * @param {object} options el objeto de configuracion de mi GLEngine class
@@ -61,6 +56,12 @@ export default class GLEngine {
       );
     }
     this.granada = new Granada(this);
+    this.granada.setPosition(-4, 1, -4);
+    this.granada.updateModelMatrix();
+
+    this.esfera = new Esfera(this);
+    this.esfera.setPosition(0, 3, 0);
+    this.esfera.updateModelMatrix();
 
     this.setup();
     this.initShaders();
@@ -84,9 +85,6 @@ export default class GLEngine {
       0.1,
       100.0
     );
-
-    mat4.identity(this.modelMatrix);
-    mat4.rotate(this.modelMatrix, this.modelMatrix, -1.57078, [1.0, 0.0, 0.0]);
 
     mat4.identity(this.viewMatrix);
     mat4.translate(this.viewMatrix, this.viewMatrix, [0.0, 0.0, -5.0]);
@@ -142,9 +140,8 @@ export default class GLEngine {
   // que son necesarias para dibujar la escena (globales).
   // Lo que hace es preparar las variables uniform para los shaders, asignando
   // las matrices de mi programa, relativas al objeto que estoy por dibujar ahora.
-  setupVertexShaderMatrix(objectModelMatrix) {
-    const { gl, glProgram, modelMatrix, viewMatrix, projMatrix, normalMatrix } =
-      this;
+  setupVertexShaderMatrix(modelMatrix) {
+    const { gl, glProgram, viewMatrix, projMatrix, normalMatrix } = this;
 
     // obtengo referencias a las matrices del programa, del modelo a dibujar,
     // de la vista, projección y normal...
@@ -157,14 +154,8 @@ export default class GLEngine {
     );
 
     // Y luego asigno a estas variables uniformes de los shaders a las matrices de
-    // lo que estoy por dibujar.
-    gl.uniformMatrix4fv(
-      modelMatrixUniform,
-      false,
-      // temporal, reubicando las responsabildiades
-      objectModelMatrix || modelMatrix
-    );
-
+    // lo que estoy por dibujar. La model matrix proviende del modelo a representar ahora
+    gl.uniformMatrix4fv(modelMatrixUniform, false, modelMatrix);
     gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
     gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
     gl.uniformMatrix4fv(normalMatrixUniform, false, normalMatrix);
@@ -173,6 +164,8 @@ export default class GLEngine {
   tick() {
     requestAnimationFrame(this.tick.bind(this));
     this.granada.draw();
+    this.esfera.draw();
+    console.log("TICK ESFERA", this.esfera);
   }
 
   // TODO: falta ver donde incorporar esto, si en objeto, o en engine...

@@ -14,19 +14,26 @@ export default class Granada extends Objeto3D {
     // necesito llamar todos los metodos que ependen de la superficie
     // acá... no tengo Generics en el lenguaje tampoco como para resolverlo.
     this.setupBuffers();
-  }
 
-  draw(m) {
-    // acá es como puedo animar... pero solo desde
-    this.rotate_angle += 0.01;
-    mat4.identity(this.modelMatrix);
+    // Nos aseguramos que el objeto arranque en el angulo que esperamos
+    // para que cualquier transformación que apliquemos, pase sobre esta matriz
+    // del modelo.
     mat4.rotate(
       this.modelMatrix,
       this.modelMatrix,
       this.rotate_angle,
       [1.0, 0.0, 1.0]
     );
+  }
 
+  draw(m) {
+    // acá es como puedo animar...
+    // en lugar de llevar a la matriz del modelo a la identidad
+    // adicionamos el angulo de rotación a la matriz de modelo, como antes sumabamos
+    // sobre this.rotate_angle.
+    mat4.rotate(this.modelMatrix, this.modelMatrix, 0.01, [1.0, 0.0, 1.0]);
+
+    // TODO: REVISAR DONDE UBICAR ESTO, YA QUE DEPENDE DE LA MODEL MATRIX Y DE LAS NORMALES
     mat4.identity(this.engine.normalMatrix);
     mat4.multiply(
       this.engine.normalMatrix,
