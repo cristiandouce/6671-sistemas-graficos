@@ -8,14 +8,17 @@ export default class Granada extends Objeto3D {
   constructor(engine) {
     super(engine);
 
-    console.log("OBJETO-SUPERFICIE", this.superficie.getPosicion);
-    this.setEscala(0.2, 0.2, 0.2);
-    this.updateModelMatrix();
+    // Necesito volver a llamar `setupBuffers`, por el simple hecho
+    // de que las class propertis, se pisan solo después del llamado de
+    // super(engine). Pero como es parte de los llamados del constructor
+    // necesito llamar todos los metodos que ependen de la superficie
+    // acá... no tengo Generics en el lenguaje tampoco como para resolverlo.
+    this.setupBuffers();
   }
 
   draw(m) {
     // acá es como puedo animar... pero solo desde
-    // this.rotate_angle += 0.01;
+    this.rotate_angle += 0.01;
     mat4.identity(this.modelMatrix);
     mat4.rotate(
       this.modelMatrix,

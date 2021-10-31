@@ -1,14 +1,15 @@
+import { vec3 } from "gl-matrix";
 import Superficie from "./_superficie";
 
 export default class Granada extends Superficie {
-  getPosicion(alfa, beta) {
+  getPosicion(alpha, beta) {
     const r = 2;
-    const nx = Math.sin(beta) * Math.sin(alfa);
-    const ny = Math.sin(beta) * Math.cos(alfa);
+    const nx = Math.sin(beta) * Math.sin(alpha);
+    const ny = Math.sin(beta) * Math.cos(alpha);
     const nz = Math.cos(beta);
 
     const g = beta % 0.5;
-    const h = alfa % 1;
+    const h = alpha % 1;
     let f = 1;
 
     if (g < 0.25) f = 0.95;
@@ -22,14 +23,14 @@ export default class Granada extends Superficie {
   }
 
   getNormal(alpha, beta) {
-    const p = this.getPos(alfa, beta);
+    const p = this.getPosicion(alpha, beta);
     const v = vec3.create();
     vec3.normalize(v, p);
 
     const delta = 0.05;
-    const p1 = this.getPos(alfa, beta);
-    const p2 = this.getPos(alfa, beta + delta);
-    const p3 = this.getPos(alfa + delta, beta);
+    const p1 = this.getPosicion(alpha, beta);
+    const p2 = this.getPosicion(alpha, beta + delta);
+    const p3 = this.getPosicion(alpha + delta, beta);
 
     const v1 = vec3.fromValues(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
     const v2 = vec3.fromValues(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);

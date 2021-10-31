@@ -11,7 +11,12 @@ export default class Objeto3D {
   /**
    * @description buffers a pasar al programa para el procesado
    */
-  buffers = {};
+  buffers = {
+    index: [],
+    position: [],
+    normal: [],
+    texture: [],
+  };
 
   /**
    * @description vector de posición del objeto respecto de su eje de referencia
@@ -41,8 +46,9 @@ export default class Objeto3D {
 
   /**
    * @description superficie que define la geometria del objeto - las clases que hereden de Objeto3D, tienen que implementarla
+   * @type {import('../superficies/_superficie')}
    */
-  superficie = new Superficie(1, 1);
+  superficie = null;
 
   /**
    * @description Color del objeto
@@ -60,12 +66,17 @@ export default class Objeto3D {
   constructor(engine) {
     this.engine = engine;
     this.setupBuffers();
-    console.log("OBJETO3D", this);
+    // revisar la posición de este llamado abajo
     this.updateModelMatrix();
-    console.log("OBJETO", this);
   }
 
   setupBuffers() {
+    if (!this.superficie) {
+      // revisar si no conviene que this.buffers = null
+      // y manejar esos casos aparte...
+      return;
+    }
+
     const { position, normal, texture, index } =
       this.superficie.getArrayBuffers();
     const { gl } = this.engine;
@@ -197,6 +208,7 @@ export default class Objeto3D {
   drawScene() {
     const { gl, glProgram } = this.engine;
 
+    debugger;
     console.log(this.buffers);
 
     const vertexPositionAttribute = gl.getAttribLocation(

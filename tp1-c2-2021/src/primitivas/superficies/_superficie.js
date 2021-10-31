@@ -54,6 +54,7 @@ export default class Superficie {
       indexBuffer.push((i + 1) * columns + columns - 1);
     }
 
+    console.log("GRANADA_POSITION_BUFFER", positionBuffer);
     return {
       position: positionBuffer,
       normal: normalBuffer,

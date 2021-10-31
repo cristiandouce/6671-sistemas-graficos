@@ -62,8 +62,8 @@ export default class GLEngine {
 
     this.setup();
     this.initShaders();
-    // this.setupBuffers();
-    // this.setupVertexShaderMatrix();
+    this.setupBuffers();
+    this.setupVertexShaderMatrix();
     this.tick();
   }
 
@@ -162,6 +162,8 @@ export default class GLEngine {
         normal.push(n[2]);
       }
     }
+
+    console.log("ENGINE_POSITION_BUFFER", pos);
 
     this.trianglesVerticeBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.trianglesVerticeBuffer);
@@ -279,12 +281,12 @@ export default class GLEngine {
   }
 
   tick() {
-    // requestAnimationFrame(this.tick.bind(this));
-    this.granada.draw();
-    setTimeout(() => {
-      this.granada.draw();
-    }, 5000);
-    // this.drawScene();
+    requestAnimationFrame(this.tick.bind(this));
+    // this.granada.draw();
+    // setTimeout(() => {
+    //   this.granada.draw();
+    // }, 5000);
+    this.drawScene();
     // this.animate();
   }
 
@@ -293,30 +295,30 @@ export default class GLEngine {
     this.setupVertexShaderMatrix();
 
     console.log("ENGINE", this);
-    this.vertexPositionAttribute = gl.getAttribLocation(
+    const vertexPositionAttribute = gl.getAttribLocation(
       glProgram,
       "aVertexPosition"
     );
-    gl.enableVertexAttribArray(this.vertexPositionAttribute);
+    gl.enableVertexAttribArray(vertexPositionAttribute);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.trianglesVerticeBuffer);
     gl.vertexAttribPointer(
-      this.vertexPositionAttribute,
-      3,
+      vertexPositionAttribute,
+      this.granada.buffers.position.itemSize,
       gl.FLOAT,
       false,
       0,
       0
     );
 
-    this.vertexNormalAttribute = gl.getAttribLocation(
+    const vertexNormalAttribute = gl.getAttribLocation(
       glProgram,
       "aVertexNormal"
     );
-    gl.enableVertexAttribArray(this.vertexNormalAttribute);
+    gl.enableVertexAttribArray(vertexNormalAttribute);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.trianglesNormalBuffer);
     gl.vertexAttribPointer(
-      this.vertexNormalAttribute,
-      3,
+      vertexNormalAttribute,
+      this.granada.buffers.normal.itemSize,
       gl.FLOAT,
       false,
       0,
