@@ -1,11 +1,9 @@
-import { mat4 } from "gl-matrix";
-import SuperficieEsfera from "../superficies/esfera";
+import SuperficieTuboSenoidal from "../superficies/tubo-senoidal";
 import Objeto3D from "./base";
 
-export default class Esfera extends Objeto3D {
-  superficie = new SuperficieEsfera();
-  color = [0.7, 0, 0];
-  position = [0, 0, 0];
+export default class TuboSenoidal extends Objeto3D {
+  superficie = new SuperficieTuboSenoidal();
+
   constructor(engine) {
     super(engine);
 
@@ -15,6 +13,5 @@ export default class Esfera extends Objeto3D {
     // necesito llamar todos los metodos que ependen de la superficie
     // acá... no tengo Generics en el lenguaje tampoco como para resolverlo.
     this.setupBuffers();
-    // mat4.rotate(this.modelMatrix, this.modelMatrix, -1.75, [1.0, 0.0, 1.0]);
   }
 }

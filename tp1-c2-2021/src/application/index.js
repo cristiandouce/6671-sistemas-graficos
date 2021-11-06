@@ -1,7 +1,14 @@
 import dat from "dat.gui";
 
+import Objeto3D from "../primitivas/objetos/base";
+import Esfera from "../primitivas/objetos/esfera";
+import { DroneCameraControl } from "./camara/drone";
+
+// import Granada from "../primitivas/objetos/granada";
+// import TuboSenoidal from "../primitivas/objetos/tubo-senoidal";
+
 export default class Application {
-  gui = new dat.GUI();
+  gui = new dat.GUI({ hideable: false });
   guiState = {
     /** numero de filas de paneles: [1, 10] */
     panelRows: 6,
@@ -20,11 +27,16 @@ export default class Application {
    */
   constructor(params) {
     this.engine = params.engine;
+    this.rootObject = new Objeto3D(this.engine);
+    this.camera = new DroneCameraControl();
+    this.camera.bindListeners();
   }
 
   init() {
     this.initializeGUI();
     this.initializeEngine();
+    this.initializeScene();
+    this.tick();
   }
 
   initializeGUI() {
@@ -53,5 +65,20 @@ export default class Application {
 
   initializeEngine() {
     this.engine.init();
+  }
+
+  initializeScene() {
+    var esfera = new Esfera(this.engine);
+    esfera.setPosition(0, 0, 0);
+    esfera.updateModelMatrix();
+
+    this.rootObject.addChild(esfera);
+  }
+
+  tick() {
+    this.camera.update();
+    this.engine.setViewMatrix(this.camera.getViewMatrix());
+    requestAnimationFrame(this.tick.bind(this));
+    this.rootObject.draw();
   }
 }

@@ -53,11 +53,7 @@ export default class Objeto3D {
   /**
    * @description Color del objeto
    */
-  color = vec3.fromValues(
-    256 * Math.random(),
-    256 * Math.random(),
-    256 * Math.random()
-  );
+  color = vec3.fromValues(0.6, 0.6, 0.6);
 
   /**
    *
@@ -194,10 +190,10 @@ export default class Objeto3D {
     mat4.multiply(worldModelMatrix, parentModelMatrix, this.modelMatrix);
 
     // Dibujo mi objeto
-    if (this.buffers.position && this.buffers.index) {
-      this.engine.setupVertexShaderMatrix(worldModelMatrix);
-      this.drawScene();
-    }
+    // if (this.buffers.index.length > 0) {
+    this.engine.setupVertexShaderMatrix(worldModelMatrix, this.color);
+    this.drawScene();
+    // }
 
     // Imboco para el arbol de hijos, el dibujado
     // OJO, capaz el for-each no me sirve, por ser "async" el llamado...
@@ -207,6 +203,10 @@ export default class Objeto3D {
 
   drawScene() {
     const { gl, glProgram } = this.engine;
+
+    if (this.buffers.index.length === 0) {
+      return;
+    }
 
     const vertexPositionAttribute = gl.getAttribLocation(
       glProgram,

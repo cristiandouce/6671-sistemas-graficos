@@ -1,9 +1,12 @@
-export default class TuboSenoidal {
+import { vec3 } from "gl-matrix";
+import Superficie from "./_superficie";
+export default class TuboSenoidal extends Superficie {
   constructor(
     radio = 1,
     longitud = 5,
     senoidal = { amplitud: 0.2, longitud: 0.1 }
   ) {
+    super();
     this.radio = radio;
     this.longitud = longitud;
     this.senoidal = senoidal;
@@ -16,16 +19,21 @@ export default class TuboSenoidal {
   }
 
   getPosicion(u, v) {
+    const {
+      radio,
+      longitud,
+      senoidal: { amplitud: amplitudOnda, longitud: longitudOnda },
+    } = this;
     // definimos el radio del TuboSenoidal como un radio que cambia
     // en funcion de los parametros de amplitud de onda y longitud de onda.
     // Usamos la función coseno.
     const radioPosicion =
-      radio + amplitudDeOnda * Math.cos((2 * v * Math.PI) / longitudDeOnda);
+      radio + amplitudOnda * Math.cos((2 * v * Math.PI) / longitudOnda);
 
     // Calculamos las coordenadas xyz como si fuera un cilindro, pasando a coordenadas
     // cilindricas... la diferencia es que el radio es variable.
     const z = radioPosicion * Math.cos(2 * u * Math.PI);
-    const y = (v - 0.5) * altura;
+    const y = (v - 0.5) * longitud;
     const x = radioPosicion * Math.sin(2 * u * Math.PI);
 
     // devolvemos las coordenadas.
@@ -47,11 +55,11 @@ export default class TuboSenoidal {
 
     // obtenemos el producto vectorial, para encontrar el vector normal
     // utilizanod la librería glMatrix
-    const vn = glMatrix.vec3.cross([], v1, v2);
+    const vn = vec3.cross([], v1, v2);
 
     // normalizamos el vector normal utilizando
     // glMatrix, y devolvemos el mismo
-    return glMatrix.vec3.normalize([], vn);
+    return vec3.normalize([], vn);
   }
 
   getCoordenadasTextura(u, v) {
