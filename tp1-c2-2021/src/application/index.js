@@ -1,7 +1,9 @@
 import dat from "dat.gui";
+import CapsulaEspacial from "../objectos/capsula";
+import EstacionEspacial from "../objectos/estacion-espacial";
 
 import Objeto3D from "../primitivas/objetos/base";
-import Esfera from "../primitivas/objetos/esfera";
+import Plano from "../primitivas/objetos/plano";
 import { DroneCameraControl } from "./camara/drone";
 
 // import Granada from "../primitivas/objetos/granada";
@@ -18,6 +20,8 @@ export default class Application {
     ringSpeed: 20,
     /** numero de modulos en el anillo: [2, 8] */
     ringModules: 4,
+
+    selectedCamera: "drone",
   };
 
   /**
@@ -52,6 +56,9 @@ export default class Application {
     this.gui
       .add(this.guiState, "ringModules", 2, 8, 1)
       .onFinishChange(this.onGUIChange.bind(this, "ringModules"));
+    this.gui
+      .add(this.guiState, "selectedCamera", ["orbital 1", "orbital 2", "drone"])
+      .onFinishChange(this.onGUIChange.bind(this, "selectedCamera"));
   }
 
   /**
@@ -60,7 +67,14 @@ export default class Application {
    * @param {number|string} value nuevo valor adquirido por el parametro
    */
   onGUIChange(param, value) {
-    console.log(param, value, this.guiState);
+    switch (param) {
+      case "selectedCamera":
+        console.log("selecciono camara:", value);
+        break;
+      default:
+        console.log(param, value, this.guiState);
+        break;
+    }
   }
 
   initializeEngine() {
@@ -68,11 +82,21 @@ export default class Application {
   }
 
   initializeScene() {
-    var esfera = new Esfera(this.engine);
-    esfera.setPosition(0, 0, 0);
-    esfera.updateModelMatrix();
+    const estacion = new EstacionEspacial(this.engine);
+    estacion.setPosition(0, 0, 0);
+    estacion.updateModelMatrix();
+    this.rootObject.addChild(estacion);
 
-    this.rootObject.addChild(esfera);
+    const capsula = new CapsulaEspacial(this.engine);
+    capsula.setPosition(10, 10, 10);
+    capsula.updateModelMatrix();
+    this.rootObject.addChild(capsula);
+
+    const plano = new Plano(this.engine);
+    plano.setPosition(0, 0, 0);
+    plano.setRenderMode(this.engine.gl.LINE_LOOP);
+    plano.updateModelMatrix();
+    this.rootObject.addChild(plano);
   }
 
   tick() {

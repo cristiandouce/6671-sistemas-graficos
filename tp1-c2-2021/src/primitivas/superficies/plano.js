@@ -1,5 +1,7 @@
-export default class Plano {
-  constructor(ancho, largo) {
+import Superficie from "./_superficie";
+export default class Plano extends Superficie {
+  constructor(ancho = 100, largo = 100) {
+    super();
     this.ancho = ancho;
     this.largo = largo;
   }
@@ -9,6 +11,7 @@ export default class Plano {
   // como parametro multiplicado por el largo y ancho
   // del plano
   getPosicion(u, v) {
+    const { ancho, largo } = this;
     const x = (u - 0.5) * ancho;
     const z = (v - 0.5) * largo;
     return [x, 0, z];

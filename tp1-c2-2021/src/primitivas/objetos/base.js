@@ -1,7 +1,4 @@
 import { mat4, vec3 } from "gl-matrix";
-
-import Superficie from "../superficies/_superficie";
-
 export default class Objeto3D {
   /**
    * @type {import("../../helpers/webgl-engine").default}
@@ -56,11 +53,17 @@ export default class Objeto3D {
   color = vec3.fromValues(0.6, 0.6, 0.6);
 
   /**
+   * @description WebGLEngine.TRIANGLE_STRIP = 5
+   */
+  renderMode = 5;
+
+  /**
    *
    * @param {import("../../helpers/webgl-engine").default} engine
    */
   constructor(engine) {
     this.engine = engine;
+
     this.setupBuffers();
     // revisar la posición de este llamado abajo
     this.updateModelMatrix();
@@ -201,6 +204,14 @@ export default class Objeto3D {
     this.children.forEach((child) => child.draw(worldModelMatrix));
   }
 
+  setRenderMode(renderMode) {
+    const { gl } = this.engine;
+    if (renderMode !== gl.TRIANGLE_STRIP || renderMode !== gl.LINE_LOOP) {
+      this.renderMode = gl.TRIANGLE_STRIP;
+    }
+    this.renderMode = renderMode;
+  }
+
   drawScene() {
     const { gl, glProgram } = this.engine;
 
@@ -244,7 +255,7 @@ export default class Objeto3D {
     // Y finalmente dibujo los streams, acá es donde se triggerean los shaders
     // de vertex y fragment, y se empieza a pintar la pantalla con mi objeto.
     gl.drawElements(
-      gl.TRIANGLE_STRIP,
+      this.renderMode,
       this.buffers.index.numItems,
       gl.UNSIGNED_SHORT,
       0
