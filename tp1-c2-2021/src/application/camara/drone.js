@@ -3,9 +3,9 @@ import { mat4, vec3 } from "gl-matrix";
 export class DroneCameraControl {
   static MIN_Y = 1;
 
-  static DELTA_TRASLACION = 0.5; // velocidad de traslacion
-  static DELTA_ROTACION = 0.02; // velocidad de rotacion
-  static FACTOR_INERCIA = 0.05;
+  static DELTA_TRASLACION = 0.3; // velocidad de traslacion
+  static DELTA_ROTACION = 0.01; // velocidad de rotacion
+  static FACTOR_INERCIA = 0.1;
 
   static INITIAL_STATE = {
     xVel: 0,
@@ -26,6 +26,7 @@ export class DroneCameraControl {
   };
 
   initialPosition = [0, 0, 0];
+  initialRotation = [0, 0, 0];
   position = vec3.create();
   rotation = vec3.create();
 
@@ -34,9 +35,28 @@ export class DroneCameraControl {
 
   state = Object.assign({}, DroneCameraControl.INITIAL_STATE);
 
-  constructor(initialPosition = [0, 0, 0]) {
+  constructor(initialPosition = [0, 0, 0], initialRotation = [0, 0, 0]) {
     this.initialPosition = initialPosition;
+    this.initialRotation = initialRotation;
     this.position = vec3.fromValues(...this.initialPosition);
+    this.rotation = vec3.fromValues(...this.initialRotation);
+    mat4.rotateX(
+      this.rotationMatrix,
+      this.rotationMatrix,
+      this.rotation[0] * DroneCameraControl.DELTA_ROTACION
+    );
+    mat4.rotateY(
+      this.rotationMatrix,
+      this.rotationMatrix,
+      this.rotation[1] * DroneCameraControl.DELTA_ROTACION
+    );
+
+    mat4.rotateZ(
+      this.rotationMatrix,
+      this.rotationMatrix,
+      this.rotation[2] * DroneCameraControl.DELTA_ROTACION
+    );
+
     this.keyDownListener = this.keyDownListener.bind(this);
     this.keyUpListener = this.keyUpListener.bind(this);
   }
@@ -44,6 +64,10 @@ export class DroneCameraControl {
   attach() {
     this.reset();
     this.bindListeners();
+  }
+
+  reset() {
+    // reset all default values
   }
 
   bindListeners() {

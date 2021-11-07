@@ -32,8 +32,8 @@ export default class Application {
   constructor(params) {
     this.engine = params.engine;
     this.rootObject = new Objeto3D(this.engine);
-    this.camera = new DroneCameraControl();
-    this.camera.bindListeners();
+    this.camera = new DroneCameraControl([0, 30, 30], [-60, 0, 0]);
+    this.camera.attach();
   }
 
   init() {

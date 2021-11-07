@@ -146,6 +146,7 @@ export default class Objeto3D {
    */
   setPosition(x, y, z) {
     vec3.set(this.position, x, y, z);
+    this.updateModelMatrix();
   }
 
   /**
@@ -155,7 +156,8 @@ export default class Objeto3D {
    * @param {Number} z
    */
   setRotation(x, y, z) {
-    vec3.set(this.position, x, y, z);
+    vec3.set(this.rotation, x, y, z);
+    this.updateModelMatrix();
   }
 
   /**
@@ -165,7 +167,8 @@ export default class Objeto3D {
    * @param {Number} z
    */
   setEscala(x, y, z) {
-    vec3.set(this.position, x, y, z);
+    vec3.set(this.scale, x, y, z);
+    this.updateModelMatrix();
   }
 
   /**
@@ -173,6 +176,8 @@ export default class Objeto3D {
    * @private
    */
   updateModelMatrix() {
+    mat4.identity(this.modelMatrix);
+
     mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
 
     mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);

@@ -2,10 +2,15 @@ import SuperficieTuboSenoidal from "../superficies/tubo-senoidal";
 import Objeto3D from "./base";
 
 export default class TuboSenoidal extends Objeto3D {
-  superficie = new SuperficieTuboSenoidal();
-
-  constructor(engine) {
+  constructor(
+    engine,
+    radio = 1,
+    longitud = 5,
+    senoidal = { amplitud: 0.2, longitud: 0.1 }
+  ) {
     super(engine);
+
+    this.superficie = new SuperficieTuboSenoidal(radio, longitud, senoidal);
 
     // Necesito volver a llamar `setupBuffers`, por el simple hecho
     // de que las class propertis, se pisan solo después del llamado de
