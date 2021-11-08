@@ -91,11 +91,6 @@ export default class Application {
     estacion.updateModelMatrix();
     this.rootObject.addChild(estacion);
 
-    // determino como target de las camaras orbitales
-    // el centro de la estacion, y los paneles solares
-    this.cameras["orbital 1"].setTarget(estacion.position);
-    this.cameras["orbital 2"].setTarget(estacion.paneles.position);
-
     const capsula = new CapsulaEspacial(this.engine);
     capsula.setPosition(10, 10, 10);
     capsula.updateModelMatrix();
@@ -106,6 +101,18 @@ export default class Application {
     plano.setRenderMode(this.engine.gl.LINE_LOOP);
     plano.updateModelMatrix();
     this.rootObject.addChild(plano);
+
+    // determino como target de las camaras orbitales
+    // el centro de la estacion, y los paneles solares
+    this.cameras["orbital 1"].setTarget(estacion.getWorldPosition());
+    this.cameras["orbital 2"].setTarget(capsula.getWorldPosition());
+
+    console.log(
+      "POSICIONES",
+      estacion.getWorldPosition(),
+      estacion.paneles.getWorldPosition(),
+      capsula.getWorldPosition()
+    );
   }
 
   tick() {

@@ -42,6 +42,12 @@ export default class Objeto3D {
   children = [];
 
   /**
+   * @description padre del Objeto3D, en el arbol de la escena
+   * @type {Objeto3D}
+   */
+  parent = null;
+
+  /**
    * @description superficie que define la geometria del objeto - las clases que hereden de Objeto3D, tienen que implementarla
    * @type {import('../superficies/_superficie')}
    */
@@ -125,10 +131,16 @@ export default class Objeto3D {
    */
   addChild(child) {
     this.children.push(child);
+
+    try {
+      child.setParent(this);
+    } catch (error) {
+      console.error("Unable to set childs parent to current", error, this);
+    }
   }
 
   /**
-   * Agrega un Objeto3D como hijo
+   * Elimina un Objeto3D como hijo
    * @param {Objeto3D} child
    */
   removeChild(child) {
@@ -136,6 +148,38 @@ export default class Objeto3D {
     if (foundIndex !== -1) {
       this.children.splice(foundIndex, 1);
     }
+  }
+
+  /**
+   * Agrega un Objeto3D como padre
+   * @param {Objeto3D} parent
+   */
+  setParent(parent) {
+    this.parent = parent;
+  }
+
+  getWorldMatrix() {
+    const worldModelMatrix = mat4.create();
+
+    if (this.parent && typeof this.parent.getWorldMatrix === "function") {
+      // Obteno la matriz de modelado respecto del mundo
+      mat4.multiply(
+        worldModelMatrix,
+        this.parent.getWorldMatrix(),
+        this.modelMatrix
+      );
+    } else {
+      mat4.multiply(worldModelMatrix, worldModelMatrix, this.modelMatrix);
+    }
+
+    return worldModelMatrix;
+  }
+
+  getWorldPosition() {
+    const worldPosition = vec3.create();
+
+    mat4.getTranslation(worldPosition, this.getWorldMatrix());
+    return worldPosition;
   }
 
   /**
