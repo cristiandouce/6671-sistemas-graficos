@@ -23,7 +23,7 @@ export default class Application {
     /** numero de modulos en el anillo: [2, 8] */
     ringModules: 4,
 
-    selectedCamera: "orbital 2",
+    selectedCamera: "orbital 1",
   };
 
   /**
@@ -39,10 +39,13 @@ export default class Application {
       "orbital 2": new OrbitalCamera([0, 30, 30], [0, 0, 0]).attach(),
       drone: new DroneCameraControl([0, 30, 30], [-65, 0, 0]).attach(),
     };
+
+    this.keyDownListener = this.keyDownListener.bind(this);
   }
 
   init() {
     this.initializeGUI();
+    this.bindGlobalControls();
     this.initializeEngine();
     this.initializeScene();
     this.tick();
@@ -61,7 +64,7 @@ export default class Application {
     this.gui
       .add(this.guiState, "ringModules", 2, 8, 1)
       .onFinishChange(this.onGUIChange.bind(this, "ringModules"));
-    this.gui
+    this.cameraController = this.gui
       .add(this.guiState, "selectedCamera", ["orbital 1", "orbital 2", "drone"])
       .onFinishChange(this.onGUIChange.bind(this, "selectedCamera"));
   }
@@ -80,6 +83,30 @@ export default class Application {
         console.log(param, value, this.guiState);
         break;
     }
+  }
+
+  bindGlobalControls() {
+    document.addEventListener("keydown", this.keyDownListener);
+  }
+
+  /**
+   *
+   * @param {KeyboardEvent} e
+   */
+  keyDownListener(e) {
+    switch (e.key) {
+      case "1":
+        this.guiState.selectedCamera = "orbital 1";
+        break;
+      case "2":
+        this.guiState.selectedCamera = "orbital 2";
+        break;
+      case "3":
+        this.guiState.selectedCamera = "drone";
+        break;
+    }
+
+    this.cameraController.updateDisplay();
   }
 
   initializeEngine() {

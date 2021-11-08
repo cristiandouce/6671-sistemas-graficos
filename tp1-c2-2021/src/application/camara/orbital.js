@@ -28,6 +28,7 @@ export class OrbitalCamera {
     this.mouseDownListener = this.mouseDownListener.bind(this);
     this.mouseUpListener = this.mouseUpListener.bind(this);
     this.mouseWheelListener = this.mouseWheelListener.bind(this);
+    this.keyDownListener = this.keyDownListener.bind(this);
   }
 
   bindListeners() {
@@ -35,6 +36,7 @@ export class OrbitalCamera {
     document.addEventListener("mousedown", this.mouseDownListener);
     document.addEventListener("mouseup", this.mouseUpListener);
     document.addEventListener("wheel", this.mouseWheelListener);
+    document.addEventListener("keydown", this.keyDownListener);
   }
 
   unbindListeners() {
@@ -42,6 +44,7 @@ export class OrbitalCamera {
     document.removeEventListener("mousedown", this.mouseDownListener);
     document.removeEventListener("mouseup", this.mouseUpListener);
     document.removeEventListener("wheel", this.mouseWheelListener);
+    document.removeEventListener("keydown", this.keyDownListener);
   }
 
   /**
@@ -92,6 +95,32 @@ export class OrbitalCamera {
     const { FACTOR_VELOCIDAD, MIN_RADIUS, MAX_RADIUS } = OrbitalCamera;
     // Hacemos que el radio se mueva más rápido que los giros.
     const deltaRadius = e.deltaY * FACTOR_VELOCIDAD * 5;
+
+    const newRadius = this.radius + deltaRadius;
+
+    if (newRadius < MIN_RADIUS || newRadius > MAX_RADIUS) {
+      return;
+    }
+
+    // Actualizo el radio solo si estoy dentro de los limites
+    this.radius = newRadius;
+  }
+
+  /**
+   * Actualiza el "zoom" o bien el radio de proximidad
+   * al `target` que la camara apunta.
+   * @param {MouseEvent} e
+   */
+  keyDownListener(e) {
+    if (e.key !== "z" && e.key !== "x") {
+      return;
+    }
+
+    const mult = e.key === "z" ? -1 : 1;
+
+    const { FACTOR_VELOCIDAD, MIN_RADIUS, MAX_RADIUS } = OrbitalCamera;
+    // Hacemos que el radio se mueva más rápido que los giros.
+    const deltaRadius = mult * FACTOR_VELOCIDAD * 50;
 
     const newRadius = this.radius + deltaRadius;
 
