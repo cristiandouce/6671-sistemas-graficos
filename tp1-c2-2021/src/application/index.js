@@ -22,7 +22,7 @@ export default class Application {
     /** numero de modulos en el anillo: [2, 8] */
     ringModules: 4,
 
-    selectedCamera: "drone",
+    selectedCamera: "orbital 2",
   };
 
   /**

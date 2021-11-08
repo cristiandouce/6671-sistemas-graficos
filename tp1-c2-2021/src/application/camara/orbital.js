@@ -118,9 +118,9 @@ export class OrbitalCamera {
   }
 
   updateAlphaBetaFromTarget() {
-    const deltaX = this.eyePosition[0] - this.targetPosition[0];
-    const deltaY = this.eyePosition[1] - this.targetPosition[1];
-    const deltaZ = this.eyePosition[2] - this.targetPosition[2];
+    const deltaX = this.initialPosition[0] - this.targetPosition[0];
+    const deltaY = this.initialPosition[1] - this.targetPosition[1];
+    const deltaZ = this.initialPosition[2] - this.targetPosition[2];
 
     if (deltaX > 0 && deltaY > 0) {
       this.alpha = Math.atan(deltaY / deltaX);
@@ -176,20 +176,29 @@ export class OrbitalCamera {
     this.beta -= FACTOR_VELOCIDAD * deltaY;
 
     if (this.beta < 0) {
+      // se requiere un limite, de lo contrario hay posiciones
+      // que dan 0 en el limite cuando no deberian
       this.beta = 0.001;
     }
 
     if (this.beta > Math.PI) {
-      this.beta = Math.PI;
+      // se requiere un limite, de lo contrario hay posiciones
+      // que dan 0 en el limite cuando no deberian
+      this.beta = Math.PI - 0.001;
     }
 
     this.alpha = this.alpha % (2 * Math.PI);
 
     let { alpha, beta } = this;
 
-    const eyePositionX = radius * Math.cos(alpha) * Math.sin(beta);
-    const eyePositionY = radius * Math.cos(beta);
-    const eyePositionZ = radius * Math.sin(alpha) * Math.sin(beta);
+    // Calculamos las nuevas posiciones del "expectador"
+    // recordando que tienen que estar centradas en nuestro target
+    // para que la camara sea puramente orbital
+    const eyePositionX =
+      this.targetPosition[0] + radius * Math.cos(alpha) * Math.sin(beta);
+    const eyePositionY = this.targetPosition[1] + radius * Math.cos(beta);
+    const eyePositionZ =
+      this.targetPosition[2] + radius * Math.sin(alpha) * Math.sin(beta);
 
     this.eyePosition = vec3.fromValues(
       eyePositionX,
@@ -211,7 +220,7 @@ export class OrbitalCamera {
     return viewMatrix;
   }
 
-  getPosition = function () {
+  getPosition() {
     return this.eyePosition;
-  };
+  }
 }
