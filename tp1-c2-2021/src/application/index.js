@@ -1,5 +1,6 @@
 import dat from "dat.gui";
 import CapsulaEspacial from "../objectos/capsula";
+import Drone from "../objectos/drone";
 import EstacionEspacial from "../objectos/estacion-espacial";
 
 import Objeto3D from "../primitivas/objetos/base";
@@ -92,9 +93,12 @@ export default class Application {
     this.rootObject.addChild(estacion);
 
     const capsula = new CapsulaEspacial(this.engine);
-    capsula.setPosition(10, 10, 10);
+    capsula.setPosition(0, -2, -5);
     capsula.updateModelMatrix();
-    this.rootObject.addChild(capsula);
+
+    const drone = new Drone(this.engine, this.cameras.drone);
+    drone.addChild(capsula);
+    this.rootObject.addChild(drone);
 
     const plano = new Plano(this.engine);
     plano.setPosition(0, 0, 0);
@@ -105,7 +109,7 @@ export default class Application {
     // determino como target de las camaras orbitales
     // el centro de la estacion, y los paneles solares
     this.cameras["orbital 1"].setTarget(estacion.getWorldPosition());
-    this.cameras["orbital 2"].setTarget(capsula.getWorldPosition());
+    this.cameras["orbital 2"].setTarget(estacion.paneles.getWorldPosition());
 
     console.log(
       "POSICIONES",

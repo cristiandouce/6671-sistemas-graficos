@@ -13,10 +13,11 @@ export default class Drone extends Objeto3D {
   constructor(engine, camera) {
     super(engine);
     this.camera = camera;
+    this.modelMatrix = this.camera.getMatrix();
   }
 
   draw(parent) {
-    this.camera.update();
-    super(parent);
+    this.modelMatrix = this.camera.getMatrix();
+    super.draw(parent);
   }
 }
