@@ -20,5 +20,8 @@ export default class EstacionEspacial extends Objeto3D {
     tubo.setEscala(1, 1.5, 1);
     tubo.updateModelMatrix();
     this.addChild(tubo);
+
+    // !!! Importante para poder definir la camara orbital 2
+    this.paneles = tubo;
   }
 }

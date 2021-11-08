@@ -5,6 +5,7 @@ import EstacionEspacial from "../objectos/estacion-espacial";
 import Objeto3D from "../primitivas/objetos/base";
 import Plano from "../primitivas/objetos/plano";
 import { DroneCameraControl } from "./camara/drone";
+import { OrbitalCamera } from "./camara/orbital";
 
 // import Granada from "../primitivas/objetos/granada";
 // import TuboSenoidal from "../primitivas/objetos/tubo-senoidal";
@@ -32,8 +33,11 @@ export default class Application {
   constructor(params) {
     this.engine = params.engine;
     this.rootObject = new Objeto3D(this.engine);
-    this.camera = new DroneCameraControl([0, 30, 30], [-60, 0, 0]);
-    this.camera.attach();
+    this.cameras = {
+      "orbital 1": new OrbitalCamera([0, 30, 30], [0, 0, 0]).attach(),
+      "orbital 2": new OrbitalCamera([0, 30, 30], [0, 0, 0]).attach(),
+      drone: new DroneCameraControl([0, 30, 30], [-65, 0, 0]).attach(),
+    };
   }
 
   init() {
@@ -87,6 +91,11 @@ export default class Application {
     estacion.updateModelMatrix();
     this.rootObject.addChild(estacion);
 
+    // determino como target de las camaras orbitales
+    // el centro de la estacion, y los paneles solares
+    this.cameras["orbital 1"].setTarget(estacion.position);
+    this.cameras["orbital 2"].setTarget(estacion.paneles.position);
+
     const capsula = new CapsulaEspacial(this.engine);
     capsula.setPosition(10, 10, 10);
     capsula.updateModelMatrix();
@@ -100,8 +109,10 @@ export default class Application {
   }
 
   tick() {
-    this.camera.update();
-    this.engine.setViewMatrix(this.camera.getViewMatrix());
+    this.cameras[this.guiState.selectedCamera].update();
+    this.engine.setViewMatrix(
+      this.cameras[this.guiState.selectedCamera].getViewMatrix()
+    );
     requestAnimationFrame(this.tick.bind(this));
     this.rootObject.draw();
   }

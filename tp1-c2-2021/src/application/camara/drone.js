@@ -38,46 +38,27 @@ export class DroneCameraControl {
   constructor(initialPosition = [0, 0, 0], initialRotation = [0, 0, 0]) {
     this.initialPosition = initialPosition;
     this.initialRotation = initialRotation;
-    this.position = vec3.fromValues(...this.initialPosition);
-    this.rotation = vec3.fromValues(...this.initialRotation);
-    mat4.rotateX(
-      this.rotationMatrix,
-      this.rotationMatrix,
-      this.rotation[0] * DroneCameraControl.DELTA_ROTACION
-    );
-    mat4.rotateY(
-      this.rotationMatrix,
-      this.rotationMatrix,
-      this.rotation[1] * DroneCameraControl.DELTA_ROTACION
-    );
-
-    mat4.rotateZ(
-      this.rotationMatrix,
-      this.rotationMatrix,
-      this.rotation[2] * DroneCameraControl.DELTA_ROTACION
-    );
-
     this.keyDownListener = this.keyDownListener.bind(this);
     this.keyUpListener = this.keyUpListener.bind(this);
+    this.reset();
   }
 
   attach() {
     this.reset();
     this.bindListeners();
-  }
-
-  reset() {
-    // reset all default values
+    return this;
   }
 
   bindListeners() {
     document.addEventListener("keydown", this.keyDownListener);
     document.addEventListener("keyup", this.keyUpListener);
+    return this;
   }
 
   unbindListeners() {
     document.removeEventListener("keydown", this.keyDownListener);
     document.removeEventListener("keyup", this.keyUpListener);
+    return this;
   }
 
   keyDownListener(e) {
@@ -138,10 +119,7 @@ export class DroneCameraControl {
         break;
 
       case "r":
-        this.rotation = vec3.create();
-        this.position = vec3.fromValues(...this.initialPosition);
-        this.state = Object.assign({}, INITIAL_STATE);
-        this.rotationMatrix = mat4.create();
+        this.reset();
         break;
 
       case "t":
@@ -149,6 +127,38 @@ export class DroneCameraControl {
         this.state = Object.assign({}, INITIAL_STATE);
         break;
     }
+  }
+
+  reset() {
+    const { INITIAL_STATE, DELTA_ROTACION } = DroneCameraControl;
+
+    this.position = vec3.fromValues(...this.initialPosition);
+    this.rotation = vec3.fromValues(...this.initialRotation);
+    this.state = Object.assign({}, INITIAL_STATE);
+
+    this.rotationMatrix = mat4.create();
+    mat4.rotateX(
+      this.rotationMatrix,
+      this.rotationMatrix,
+      this.rotation[0] * DELTA_ROTACION
+    );
+    mat4.rotateY(
+      this.rotationMatrix,
+      this.rotationMatrix,
+      this.rotation[1] * DELTA_ROTACION
+    );
+
+    mat4.rotateZ(
+      this.rotationMatrix,
+      this.rotationMatrix,
+      this.rotation[2] * DELTA_ROTACION
+    );
+
+    this.worldMatrix = mat4.create();
+    mat4.translate(this.worldMatrix, this.worldMatrix, this.position);
+    mat4.multiply(this.worldMatrix, this.worldMatrix, this.rotationMatrix);
+
+    return this;
   }
 
   keyUpListener(e) {
