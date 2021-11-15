@@ -5,6 +5,7 @@ import EstacionEspacial from "../objectos/estacion-espacial";
 
 import Objeto3D from "../primitivas/objetos/base";
 import Plano from "../primitivas/objetos/plano";
+import Barrido from "../primitivas/objetos/prueba-barrido";
 import { DroneCameraControl } from "./camara/drone";
 import { OrbitalCamera } from "./camara/orbital";
 
@@ -138,11 +139,18 @@ export default class Application {
     this.cameras["orbital 1"].setTarget(estacion.getWorldPosition());
     this.cameras["orbital 2"].setTarget(estacion.paneles.getWorldPosition());
 
+    // PRUEBAS
+    const barrido = new Barrido(this.engine);
+    barrido.setPosition(0, 15, 0);
+    barrido.updateModelMatrix();
+    this.rootObject.addChild(barrido);
+
     console.log(
       "POSICIONES",
       estacion.getWorldPosition(),
       estacion.paneles.getWorldPosition(),
-      capsula.getWorldPosition()
+      capsula.getWorldPosition(),
+      barrido.getWorldPosition()
     );
   }
 
