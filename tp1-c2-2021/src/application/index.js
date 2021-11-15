@@ -145,6 +145,9 @@ export default class Application {
     barrido.updateModelMatrix();
     this.rootObject.addChild(barrido);
 
+    // TODO: BORRAR ESTA LINEA
+    this.cameras["orbital 1"].setTarget(barrido.getWorldPosition());
+
     console.log(
       "POSICIONES",
       estacion.getWorldPosition(),

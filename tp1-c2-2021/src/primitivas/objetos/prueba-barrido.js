@@ -39,11 +39,9 @@ export default class Barrido extends Objeto3D {
     // ]));
 
     const formaLateral = (window.formaLateral = new Recorrido([
-      [0.00001, 0.00001, 0.00001],
-      [0, 2, 0],
-      [0, 3, 0],
-      [0, 4, 0],
-      [0, 5, 0],
+      [0.001, 0, -10],
+      [0, 0, 0],
+      [0, 0, 10],
     ]));
 
     // formaLateral.getTangent = function (u) {

@@ -195,49 +195,183 @@ export class SuperficieBarridoE extends Superficie {
   }
 
   getArrayBuffers(rows = 128, columns = 128) {
+    let newRowCount = rows;
+    let positionBuffer = [];
+    let normalBuffer = [];
+    let textureBuffer = [];
+    let indexBuffer = [];
+
     const buffers = super.getArrayBuffers(rows, columns);
 
-    // // agrego buffers de la tapa inferior
-    // const bottomCoverPosition = buffers.position.length;
-    // const bottomPosition = this.route.getPosition(0);
-    // const bottomNormal = this.route.getTangent(0);
-    // const bottomUV = [0, 0];
+    // TODO: Parametrizar el que tenga o no tapas
+    const hasBottomCover = true;
+    const hasTopCover = true;
 
-    // buffers.position.push(bottomPosition[0]);
-    // buffers.position.push(bottomPosition[1]);
-    // buffers.position.push(bottomPosition[2]);
+    if (hasBottomCover) {
+      // la tangente del recorrido, es la normal a la tapa
+      const bottomCoverNormal = this.route.getTangent(0);
+      // pero hay que hacer que mire hacia afuera
+      vec3.scale(bottomCoverNormal, bottomCoverNormal, -1);
 
-    // buffers.normal.push(bottomNormal[0]);
-    // buffers.normal.push(bottomNormal[1]);
-    // buffers.normal.push(bottomNormal[2]);
+      const bottomCoverCenterPosition = vec3.create();
 
-    // buffers.texture.push(bottomUV[0]);
-    // buffers.texture.push(bottomUV[1]);
+      for (let i = 0; i < columns; i++) {
+        vec3.add(
+          bottomCoverCenterPosition,
+          bottomCoverCenterPosition,
+          vec3.fromValues(
+            buffers.position[3 * i],
+            buffers.position[3 * i + 1],
+            buffers.position[3 * i + 2]
+          )
+        );
+      }
 
-    // // buffers.index = this.getIndexBuffer(rows + 1, columns);
+      // promediamos la suma de todos los puntos para obtener el centro de masa de la tapa inferior.
+      vec3.scale(
+        bottomCoverCenterPosition,
+        bottomCoverCenterPosition,
+        1 / columns
+      );
 
-    // // agrego buffers de la tapa superior
-    // const topCoverPosition = buffers.position.length;
-    // const topPosition = this.route.getPosition(1);
-    // const topNormal = this.route.getTangent(1);
-    // const topUV = [0, 0];
+      // agregamos una fila completa con el centro de masa calculado, con posicion, normal y textura
+      for (var i = 0; i < columns; i++) {
+        positionBuffer.push(
+          bottomCoverCenterPosition[0],
+          bottomCoverCenterPosition[1],
+          bottomCoverCenterPosition[2]
+        );
 
-    // buffers.position.push(topPosition[0]);
-    // buffers.position.push(topPosition[1]);
-    // buffers.position.push(topPosition[2]);
+        normalBuffer.push(
+          bottomCoverNormal[0],
+          bottomCoverNormal[1],
+          bottomCoverNormal[2]
+        );
 
-    // buffers.normal.push(topNormal[0]);
-    // buffers.normal.push(topNormal[1]);
-    // buffers.normal.push(topNormal[2]);
+        // TODO: parametrizar el UV buffer, para poder dar textura a las capas
+        // estamos en el `v=0` al agregar la tapa inferior.
+        textureBuffer.push(i / columns, 0);
+      }
 
-    // buffers.texture.push(topUV[0]);
-    // buffers.texture.push(topUV[1]);
+      // doplicamos la primer fila de la superficie, tanto posición, normal y textura
+      for (var i = 0; i < columns; i++) {
+        positionBuffer.push(
+          buffers.position[3 * i],
+          buffers.position[3 * i + 1],
+          buffers.position[3 * i + 2]
+        );
 
-    // buffers.index = this.getIndexBuffer(
-    //   rows + 2,
-    //   columns,
-    //   buffers.position.length
-    // );
+        normalBuffer.push(
+          bottomCoverNormal[0],
+          bottomCoverNormal[1],
+          bottomCoverNormal[2]
+        );
+
+        // TODO: parametrizar el UV buffer, para poder dar textura a las capas
+        // estamos en el `v=0` al agregar la tapa inferior.
+        textureBuffer.push(i / columns, 0);
+      }
+
+      // aumentamos el numero de filas en 2
+      newRowCount += 2;
+    }
+
+    // concatenamos las primeras dos nuevas filas, con las ya existentes
+    positionBuffer = positionBuffer.concat(buffers.position);
+    normalBuffer = normalBuffer.concat(buffers.normal);
+    textureBuffer = textureBuffer.concat(buffers.texture);
+
+    // Hasta acá tenemos la tapa inicial incorporada en los buffers. Todavía sin buffer de indices.
+    // Repetimos lo mismo para la tapa superior.
+
+    if (hasTopCover) {
+      // la tangente del recorrido, es la normal a la tapa
+      // que tiene la misma dirección que el recorrido.
+      const topCoverNormal = this.route.getTangent(1);
+
+      const topCoverCenterPosition = vec3.create();
+
+      // Nos corremos 3 posiciones, desde el final, para estar en la primer
+      // coordenada del último vector de 3 coordenadas. Luego, nos corremos
+      // tantos vertices a la izquierda como columnas agregamos en el index buffer
+      // de la clase superficie por `this.getIndexBuffer()`. Y eso nos deja posicionados
+      // en la primer coordenada, de la ultima fila de vectores.
+      const lastRowPositionIndex =
+        buffers.position.length - 1 - 3 * (columns - 1) - 2;
+
+      // Buscamos calcular el centro de masa de la tapa superior.
+      for (let i = 0; i < columns; i++) {
+        vec3.add(
+          topCoverCenterPosition,
+          topCoverCenterPosition,
+          vec3.fromValues(
+            buffers.position[3 * i + lastRowPositionIndex],
+            buffers.position[3 * i + 1 + lastRowPositionIndex],
+            buffers.position[3 * i + 2 + lastRowPositionIndex]
+          )
+        );
+      }
+
+      // promediamos la suma de todos los puntos para obtener el centro de masa de la tapa inferior.
+      vec3.scale(topCoverCenterPosition, topCoverCenterPosition, 1 / columns);
+
+      // doplicamos la ultima fila de la superficie, tanto posición, normal y textura
+      for (var i = 0; i < columns; i++) {
+        positionBuffer.push(
+          buffers.position[3 * i + lastRowPositionIndex],
+          buffers.position[3 * i + 1 + lastRowPositionIndex],
+          buffers.position[3 * i + 2 + lastRowPositionIndex]
+        );
+
+        normalBuffer.push(
+          topCoverNormal[0],
+          topCoverNormal[1],
+          topCoverNormal[2]
+        );
+
+        // TODO: parametrizar el UV buffer, para poder dar textura a las capas
+        // estamos en el `v=0` al agregar la tapa inferior.
+        textureBuffer.push(i / columns, 1);
+      }
+
+      console.log(
+        "LALALALA",
+        buffers.position.length,
+        columns,
+        columns * 3,
+        lastRowPositionIndex
+      );
+
+      // agregamos una fila completa con el centro de masa calculado, con posicion, normal y textura
+      for (var i = 0; i < columns; i++) {
+        positionBuffer.push(
+          topCoverCenterPosition[0],
+          topCoverCenterPosition[1],
+          topCoverCenterPosition[2]
+        );
+
+        normalBuffer.push(
+          topCoverNormal[0],
+          topCoverNormal[1],
+          topCoverNormal[2]
+        );
+
+        // TODO: parametrizar el UV buffer, para poder dar textura a las capas
+        // estamos en el `v=1` al agregar la tapa inferior.
+        textureBuffer.push(i / columns, 1);
+      }
+      // aumentamos el numero de filas en 2
+      newRowCount += 2;
+    }
+
+    indexBuffer = this.getIndexBuffer(newRowCount, columns);
+
+    return {
+      position: positionBuffer,
+      normal: normalBuffer,
+      texture: textureBuffer,
+      index: indexBuffer,
+    };
     return buffers;
   }
 
