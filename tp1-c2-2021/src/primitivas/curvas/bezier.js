@@ -1,4 +1,4 @@
-import { vec3, vec4 } from "gl-matrix";
+import { vec2, vec3, vec4 } from "gl-matrix";
 import Curva from "./curva";
 
 export default class BezierCurve extends Curva {
@@ -135,6 +135,13 @@ export default class BezierCurve extends Curva {
    * @returns
    */
   getTangent(u) {
+    // if (u === 0) {
+    //   debugger;
+    // }
+    // if (u === 1) {
+    //   debugger;
+    // }
+
     const n = this.grade + 1;
 
     const tangent = vec3.create();
@@ -179,15 +186,43 @@ export default class BezierCurve extends Curva {
    *
    * Fuente:
    *    - https://en.wikipedia.org/wiki/Frenet%E2%80%93Serret_formulas
+   *    - https://es.wikipedia.org/wiki/Geometr%C3%ADa_diferencial_de_curvas
    * @param {Number} u
    */
   getBinormal(u) {
+    // const tangent = this.getTangent(u);
+    // const sd = this.getSecondDerivate(u);
+    // const binormal = vec3.create();
+
+    // vec3.cross(binormal, tangent, sd);
+
+    // obtenemos el vector binormal como la tendencia de cambio
+    // const du1 = u === 1 ? -0.000001 : 0;
+    // const du2 = u === 1 ? 0 : 0.000001;
+    // const pos1 = this.getPosition(u + du1);
+    // const pos2 = this.getPosition(u + du2);
+    // const binormal = vec3.create();
+
+    // vec3.cross(binormal, pos1, pos2);
+
+    // obtenemos el vector binormal como el producto vectorial entre
+    // el vector posicion y la tengente, marcando la velocidad angular.
     const tangent = this.getTangent(u);
-    const sd = this.getSecondDerivate(u);
+    const pos = this.getPosition(u);
     const binormal = vec3.create();
 
-    vec3.cross(binormal, tangent, sd);
+    vec3.cross(binormal, pos, tangent);
+
+    if (vec3.equals([0, 0, 0], binormal)) {
+      // tangent[0] += 0.00001;
+      pos[0] += 0.00001;
+      // pos[1] += 0.00001;
+      pos[2] += 0.00001;
+      vec3.cross(binormal, tangent, pos);
+    }
+
     vec3.normalize(binormal, binormal);
+
     return binormal;
   }
 

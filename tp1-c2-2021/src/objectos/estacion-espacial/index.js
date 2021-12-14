@@ -1,6 +1,7 @@
-import Esfera from "../../primitivas/objetos/esfera";
 import Objeto3D from "../../primitivas/objetos/base";
-import TuboSenoidal from "../../primitivas/objetos/tubo-senoidal";
+import Anillo from "./anillo";
+import Nucleo from "./nucleo";
+import PanelesSolares from "./paneles";
 
 export default class EstacionEspacial extends Objeto3D {
   color = [1.0, 0, 0];
@@ -9,19 +10,32 @@ export default class EstacionEspacial extends Objeto3D {
     super(engine);
     this.setupBuffers();
 
-    const esfera = new Esfera(engine, 4);
-    esfera.color = this.color;
+    const largoEjePaneles = 20;
 
-    this.addChild(esfera);
+    const anillo = new Anillo(engine);
+    this.addChild(anillo);
 
-    const tubo = new TuboSenoidal(engine, 1, 20);
-    tubo.setRotation(Math.PI / 2, 0, 0);
-    tubo.setPosition(0, 0, 12);
-    tubo.setEscala(1, 1.5, 1);
-    tubo.updateModelMatrix();
-    this.addChild(tubo);
+    const nucleo = new Nucleo(engine);
+    this.addChild(nucleo);
+
+    const paneles = new PanelesSolares(engine);
+    paneles.setRotation(-Math.PI / 2, 0, 0);
+    paneles.setPosition(
+      0,
+      0,
+      nucleo.getDistanciaAModuloInferior() + paneles.getLargoEje() / 2
+    );
+
+    paneles.updateModelMatrix();
+    this.addChild(paneles);
 
     // !!! Importante para poder definir la camara orbital 2
-    this.paneles = tubo;
+    this.paneles = paneles;
+    this.anillo = anillo;
+  }
+
+  actualizarContexto(contexto) {
+    this.paneles.actualizarContexto(contexto);
+    this.anillo.actualizarContexto(contexto);
   }
 }

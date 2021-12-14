@@ -18,7 +18,7 @@ export default class GLEngine {
   /**
    * @description la posición de la luz que ilumina la escena
    */
-  lightPosition = [0, 50, 50];
+  lightPosition = [50, 50, 50];
 
   /** @type {import("gl-matrix").ReadonlyMat4} */
   viewMatrix = mat4.create();
@@ -135,15 +135,8 @@ export default class GLEngine {
   // que son necesarias para dibujar la escena (globales).
   // Lo que hace es preparar las variables uniform para los shaders, asignando
   // las matrices de mi programa, relativas al objeto que estoy por dibujar ahora.
-  setupVertexShaderMatrix(modelMatrix, color = [0.0, 0.0, 0.0]) {
-    const {
-      gl,
-      glProgram,
-      viewMatrix,
-      projMatrix,
-      normalMatrix,
-      lightPosition,
-    } = this;
+  setupVertexShaderMatrix(modelMatrix, normalMatrix, color = [0.0, 0.0, 0.0]) {
+    const { gl, glProgram, viewMatrix, projMatrix, lightPosition } = this;
 
     // obtengo referencias a las matrices del programa, del modelo a dibujar,
     // de la vista, projección y normal...
@@ -169,6 +162,10 @@ export default class GLEngine {
     gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
     gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
     gl.uniformMatrix4fv(normalMatrixUniform, false, normalMatrix);
+  }
+
+  getViewMatrix() {
+    return mat4.clone(this.viewMatrix);
   }
 
   setViewMatrix(viewMatrix) {

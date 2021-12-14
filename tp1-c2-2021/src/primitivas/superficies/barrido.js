@@ -1,15 +1,6 @@
 import { mat3, mat4, vec3, vec4 } from "gl-matrix";
 import Superficie from "./_superficie";
-
 export class SuperficieBarrido extends Superficie {
-  /** @type {import("../curvas/recorrido").default} */
-  shape = null;
-  shapeStep = 0.01;
-
-  /** @type {import("../curvas/recorrido").default} */
-  route = null;
-  routeStep = 0.01;
-
   /**
    *
    * @param {import("../curvas/recorrido").default} shape
@@ -17,15 +8,26 @@ export class SuperficieBarrido extends Superficie {
    * @param {number} shapeStep
    * @param {number} routeStep
    */
-  constructor(shape = null, route = null, shapeStep = 0.01, routeStep = 0.01) {
+  constructor(
+    shape = null,
+    route = null,
+    hasBottomCover = false,
+    hasTopCover = false
+  ) {
     super();
     this.shape = shape;
     this.route = route;
-    this.shapeStep = shapeStep;
-    this.routeStep = routeStep;
+    this.shapeStep = 0.01;
+    this.routeStep = 0.01;
 
     this.levels = 1 / this.routeStep;
     this.pointsPerLevel = 1 / this.shapeStep;
+
+    this.hasBottomCover = !!hasBottomCover;
+    this.hasTopCover = !!hasTopCover;
+
+    // cache buffers
+    this.buffers = this.getArrayBuffers();
   }
 
   getLevelMatrix(v) {
@@ -42,17 +44,17 @@ export class SuperficieBarrido extends Superficie {
       0,
 
       // segunda columna
-
-      tangent[0],
-      tangent[1],
-      tangent[2],
-      0,
-      // tercer columna
-
       binormal[0],
       binormal[1],
       binormal[2],
       0,
+
+      // tercera columna
+      tangent[0],
+      tangent[1],
+      tangent[2],
+      0,
+
       // cuarta columna
       position[0],
       position[1],
@@ -63,111 +65,39 @@ export class SuperficieBarrido extends Superficie {
     return levelMatrix;
   }
 
-  getArrayBuffers() {
-    const positionBuffer = [];
-    const normalBuffer = [];
-    const textureBuffer = [];
-    const indexBuffer = [];
-
-    for (let v = 0; v <= 1; v += this.routeStep) {
-      const levelMatrix = this.getLevelMatrix(v);
-
-      for (let u = 0; u <= 1; u += this.shapeStep) {
-        // transformamos el position buffer por la matriz de nivel
-        const pos = this.shape.getPosition(u);
-
-        vec3.transformMat4(pos, pos, levelMatrix);
-
-        positionBuffer.push(pos[0]);
-        positionBuffer.push(pos[1]);
-        positionBuffer.push(pos[2]);
-
-        // transformamos el normal buffer por la matriz de nivel
-        const nrm = this.shape.getNormal(u);
-
-        vec3.transformMat4(nrm, nrm, levelMatrix);
-
-        normalBuffer.push(nrm[0]);
-        normalBuffer.push(nrm[1]);
-        normalBuffer.push(nrm[2]);
-
-        // TODO: implementar texture buffers...
-        textureBuffer.push(u);
-        textureBuffer.push(v);
-      }
-    }
-
-    const ind = this.getIndexBuffer(this.levels - 1, this.pointsPerLevel - 1);
-
-    console.log({
-      position: positionBuffer,
-      normal: normalBuffer,
-      texture: textureBuffer,
-      index: ind,
-    });
-
-    return {
-      position: positionBuffer,
-      normal: normalBuffer,
-      texture: textureBuffer,
-      index: ind,
-    };
-  }
-}
-
-export class SuperficieBarridoE extends Superficie {
-  /**
-   *
-   * @param {import("../curvas/recorrido").default} shape
-   * @param {import("../curvas/recorrido").default} route
-   * @param {number} shapeStep
-   * @param {number} routeStep
-   */
-  constructor(shape = null, route = null, shapeStep = 0.01, routeStep = 0.01) {
-    super();
-    this.shape = shape;
-    this.route = route;
-    this.shapeStep = shapeStep;
-    this.routeStep = routeStep;
-
-    this.levels = 1 / this.routeStep;
-    this.pointsPerLevel = 1 / this.shapeStep;
-  }
-
-  getLevelMatrix(v) {
-    const position = this.route.getPosition(v);
+  // Matriz de transformación de normal, sin las traslaciones
+  getNormalMatrix(v) {
     const tangent = this.route.getTangent(v);
     const normal = this.route.getNormal(v);
     const binormal = this.route.getBinormal(v);
 
-    const levelMatrix = mat4.fromValues(
+    const normalMatrix = mat4.fromValues(
       // primer columna
       normal[0],
       normal[1],
       normal[2],
       0,
 
-      // tercer columna
+      // segunda columna
       binormal[0],
       binormal[1],
       binormal[2],
       0,
 
-      // segunda columna
+      // tercera columna
       tangent[0],
       tangent[1],
       tangent[2],
       0,
 
       // cuarta columna
-      position[0],
-      position[1],
-      position[2],
+      0,
+      0,
+      0,
       1
     );
 
-    // mat4.transpose(levelMatrix, levelMatrix);
-    return levelMatrix;
+    return normalMatrix;
   }
 
   getPosicion(u, v) {
@@ -179,13 +109,19 @@ export class SuperficieBarridoE extends Superficie {
 
   getNormal(u, v) {
     const nrm = this.shape.getNormal(u);
-    const levelMatrix = this.getLevelMatrix(v);
+    const normalMatrix = this.getNormalMatrix(v);
+    // const levelMatrix = this.getLevelMatrix(v);
 
     // Adoptamos la matriz normal para la ilumunación
-    mat4.invert(levelMatrix, levelMatrix);
-    mat4.transpose(levelMatrix, levelMatrix);
-    vec3.transformMat4(nrm, nrm, levelMatrix);
+    // mat4.invert(levelMatrix, levelMatrix);
+    // mat4.transpose(levelMatrix, levelMatrix);
+    // vec3.transformMat4(nrm, nrm, levelMatrix);
+    // vec3.scale(nrm, nrm, -1);
+
+    // Adoptamos la matriz normal para la ilumunación
+    vec3.transformMat4(nrm, nrm, normalMatrix);
     vec3.scale(nrm, nrm, -1);
+
     // retornamos el vector normal
     return nrm;
   }
@@ -195,6 +131,10 @@ export class SuperficieBarridoE extends Superficie {
   }
 
   getArrayBuffers(rows = 128, columns = 128) {
+    if (this.buffers) {
+      return this.buffers;
+    }
+
     let newRowCount = rows;
     let positionBuffer = [];
     let normalBuffer = [];
@@ -203,13 +143,11 @@ export class SuperficieBarridoE extends Superficie {
 
     const buffers = super.getArrayBuffers(rows, columns);
 
-    // TODO: Parametrizar el que tenga o no tapas
-    const hasBottomCover = true;
-    const hasTopCover = true;
-
-    if (hasBottomCover) {
+    if (this.hasBottomCover) {
+      if (this.route.radio === 1.5) debugger;
       // la tangente del recorrido, es la normal a la tapa
       const bottomCoverNormal = this.route.getTangent(0);
+
       // pero hay que hacer que mire hacia afuera
       vec3.scale(bottomCoverNormal, bottomCoverNormal, -1);
 
@@ -284,7 +222,7 @@ export class SuperficieBarridoE extends Superficie {
     // Hasta acá tenemos la tapa inicial incorporada en los buffers. Todavía sin buffer de indices.
     // Repetimos lo mismo para la tapa superior.
 
-    if (hasTopCover) {
+    if (this.hasTopCover) {
       // la tangente del recorrido, es la normal a la tapa
       // que tiene la misma dirección que el recorrido.
       const topCoverNormal = this.route.getTangent(1);
@@ -333,14 +271,6 @@ export class SuperficieBarridoE extends Superficie {
         // estamos en el `v=0` al agregar la tapa inferior.
         textureBuffer.push(i / columns, 1);
       }
-
-      console.log(
-        "LALALALA",
-        buffers.position.length,
-        columns,
-        columns * 3,
-        lastRowPositionIndex
-      );
 
       // agregamos una fila completa con el centro de masa calculado, con posicion, normal y textura
       for (var i = 0; i < columns; i++) {

@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import BezierCurve from "./bezier";
 
 export default class Recorrido {
@@ -65,6 +66,12 @@ export default class Recorrido {
   getTangent(u) {
     const U = this.getU(u);
     const curve = this.getCurve(u);
+
+    // const pos1 = this.curves[curve].getPosition(U);
+    // const pos2 = this.curves[curve].getPosition(U + 0.0000001);
+
+    // vec3.subtract(pos2, pos2, pos1);
+    // return vec3.normalize(pos2);
 
     return this.curves[curve].getTangent(U);
   }

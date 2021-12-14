@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 export default class Objeto3D {
   /**
    * @type {import("../../helpers/webgl-engine").default}
@@ -34,6 +34,11 @@ export default class Objeto3D {
    * @description matriz de modelado del objeto
    */
   modelMatrix = mat4.create();
+
+  /**
+   * @description matriz de normales del objeto
+   */
+  normalMatrix = mat4.create();
 
   /**
    * @description hijos del Objeto3D, en el arbol de la escena
@@ -224,11 +229,19 @@ export default class Objeto3D {
 
     mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
 
+    mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
+
     mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
     mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
     mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
+  }
 
-    mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
+  updateNormalMatrix() {
+    const viewMatrix = this.engine.getViewMatrix();
+    mat4.identity(this.normalMatrix);
+    mat4.multiply(this.normalMatrix, this.modelMatrix, viewMatrix);
+    mat4.invert(this.normalMatrix, this.normalMatrix);
+    mat4.transpose(this.normalMatrix, this.normalMatrix);
   }
 
   /**
@@ -241,9 +254,16 @@ export default class Objeto3D {
     // Obteno la matriz de modelado respecto del mundo
     mat4.multiply(worldModelMatrix, parentModelMatrix, this.modelMatrix);
 
+    // this.updateModelMatrix();
+    this.updateNormalMatrix();
+
     // Dibujo mi objeto
     // if (this.buffers.index.length > 0) {
-    this.engine.setupVertexShaderMatrix(worldModelMatrix, this.color);
+    this.engine.setupVertexShaderMatrix(
+      worldModelMatrix,
+      this.normalMatrix,
+      this.color
+    );
     this.drawScene();
     // }
 

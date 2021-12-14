@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix";
 import Objeto3D from "../../primitivas/objetos/base";
 
 export default class Drone extends Objeto3D {

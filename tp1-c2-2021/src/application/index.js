@@ -5,7 +5,7 @@ import EstacionEspacial from "../objectos/estacion-espacial";
 
 import Objeto3D from "../primitivas/objetos/base";
 import Plano from "../primitivas/objetos/plano";
-import Barrido from "../primitivas/objetos/prueba-barrido";
+import Prueba from "../primitivas/objetos/pruebas";
 import { DroneCameraControl } from "./camara/drone";
 import { OrbitalCamera } from "./camara/orbital";
 
@@ -36,9 +36,12 @@ export default class Application {
     this.engine = params.engine;
     this.rootObject = new Objeto3D(this.engine);
     this.cameras = {
-      "orbital 1": new OrbitalCamera([0, 30, 30], [0, 0, 0]).attach(),
-      "orbital 2": new OrbitalCamera([0, 30, 30], [0, 0, 0]).attach(),
-      drone: new DroneCameraControl([0, 30, 30], [-65, 0, 0]).attach(),
+      "orbital 1": new OrbitalCamera([-30, -30, 30], [0, 0, 0]).attach(),
+      "orbital 2": new OrbitalCamera([-30, -30, 30], [0, 0, 0]).attach(),
+      drone: new DroneCameraControl(
+        [0, 5, -15],
+        [0, Math.PI * 100, 0]
+      ).attach(),
     };
 
     this.keyDownListener = this.keyDownListener.bind(this);
@@ -117,12 +120,11 @@ export default class Application {
   initializeScene() {
     const estacion = new EstacionEspacial(this.engine);
     estacion.setPosition(0, 0, 0);
-    estacion.updateModelMatrix();
+
     this.rootObject.addChild(estacion);
 
     const capsula = new CapsulaEspacial(this.engine);
-    capsula.setPosition(0, -2, -5);
-    capsula.updateModelMatrix();
+    capsula.setPosition(0, -3, -7);
 
     const drone = new Drone(this.engine, this.cameras.drone);
     drone.addChild(capsula);
@@ -131,7 +133,7 @@ export default class Application {
     const plano = new Plano(this.engine);
     plano.setPosition(0, 0, 0);
     plano.setRenderMode(this.engine.gl.LINE_LOOP);
-    plano.updateModelMatrix();
+
     this.rootObject.addChild(plano);
 
     // determino como target de las camaras orbitales
@@ -140,20 +142,20 @@ export default class Application {
     this.cameras["orbital 2"].setTarget(estacion.paneles.getWorldPosition());
 
     // PRUEBAS
-    const barrido = new Barrido(this.engine);
-    barrido.setPosition(0, 15, 0);
-    barrido.updateModelMatrix();
-    this.rootObject.addChild(barrido);
+    const prueba = new Prueba(this.engine);
+    prueba.setPosition(0, 15, 0);
+    prueba.updateModelMatrix();
+    // this.rootObject.addChild(prueba);
 
     // TODO: BORRAR ESTA LINEA
-    this.cameras["orbital 1"].setTarget(barrido.getWorldPosition());
+    // this.cameras["orbital 2"].setTarget(prueba.getWorldPosition());
 
     console.log(
       "POSICIONES",
       estacion.getWorldPosition(),
       estacion.paneles.getWorldPosition(),
       capsula.getWorldPosition(),
-      barrido.getWorldPosition()
+      prueba.getWorldPosition()
     );
   }
 

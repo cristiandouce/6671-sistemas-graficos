@@ -14,6 +14,10 @@ export default class Superficie {
   }
 
   getArrayBuffers(rows = 128, columns = 128) {
+    if (this.buffers) {
+      return this.buffers;
+    }
+
     const positionBuffer = [];
     const normalBuffer = [];
     const textureBuffer = [];
@@ -54,12 +58,14 @@ export default class Superficie {
     //   indexBuffer.push((i + 1) * columns + columns - 1);
     // }
 
-    return {
+    this.buffers = {
       position: positionBuffer,
       normal: normalBuffer,
       texture: textureBuffer,
       index: indexBuffer,
     };
+
+    return this.buffers;
   }
 
   // getArrayBuffers(rows = 128, columns = 128) {
