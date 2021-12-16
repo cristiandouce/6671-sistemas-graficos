@@ -101,7 +101,6 @@ export class SuperficieBarrido extends Superficie {
   }
 
   getPosicion(u, v) {
-    debugger;
     const pos = this.shape.getPosition(u);
     const levelMatrix = this.getLevelMatrix(v);
     vec3.transformMat4(pos, pos, levelMatrix);
@@ -145,7 +144,6 @@ export class SuperficieBarrido extends Superficie {
     const buffers = super.getArrayBuffers(rows, columns);
 
     if (this.hasBottomCover) {
-      if (this.route.radio === 1.5) debugger;
       // la tangente del recorrido, es la normal a la tapa
       const bottomCoverNormal = this.route.getTangent(0);
 

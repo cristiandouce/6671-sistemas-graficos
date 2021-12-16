@@ -24,7 +24,7 @@ export default class CapsulaEspacial extends Objeto3D {
 
     objeto.setRotation(Math.PI, 0, Math.PI);
     this.addChild(objeto);
-    this.setupBuffers();
+    // this.setupBuffers(200, 200);
   }
 
   getModulo() {
@@ -63,7 +63,7 @@ export default class CapsulaEspacial extends Objeto3D {
     objeto.superficie = superficie;
     objeto.color = [1, 0.8, 0.6];
 
-    objeto.setupBuffers();
+    objeto.setupBuffers(200, 200);
 
     return objeto;
   }
@@ -91,7 +91,7 @@ export default class CapsulaEspacial extends Objeto3D {
     objeto.superficie = superficie;
     objeto.color = [0.3, 0.3, 0.3];
 
-    objeto.setupBuffers();
+    objeto.setupBuffers(200, 200);
 
     return objeto;
   }

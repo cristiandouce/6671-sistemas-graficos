@@ -135,13 +135,6 @@ export default class BezierCurve extends Curva {
    * @returns
    */
   getTangent(u) {
-    // if (u === 0) {
-    //   debugger;
-    // }
-    // if (u === 1) {
-    //   debugger;
-    // }
-
     const n = this.grade + 1;
 
     const tangent = vec3.create();

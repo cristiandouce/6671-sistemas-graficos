@@ -1,9 +1,3 @@
-import { vec3 } from "gl-matrix";
-import BezierCurve from "../../curvas/bezier";
-import { Circulo } from "../../curvas/circulo";
-import Recorrido from "../../curvas/recorrido";
-import { SuperficieBarrido } from "../../superficies/barrido";
-import { SuperficieRevolucion } from "../../superficies/revolucion";
 import Objeto3D from "../base";
 import PruebaBarrido from "./prueba-barrido";
 import PruebaRevolucion from "./prueba-revolucion";

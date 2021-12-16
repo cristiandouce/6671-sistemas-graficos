@@ -20,10 +20,13 @@ export default class PanelesSolares extends Objeto3D {
 
   anguloPanel = Math.PI / 3;
 
-  cantidadFilas = 8;
+  cantidadFilas = 4;
 
-  constructor(engine) {
+  constructor(engine, cantidadFilas = 4, anguloPanel = Math.PI / 3) {
     super(engine);
+
+    this.cantidadFilas = cantidadFilas;
+    this.anguloPanel = anguloPanel;
 
     const separacion = this.anchoPanel * 1.2;
     this.largo += separacion * this.cantidadFilas;

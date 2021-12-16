@@ -21,7 +21,7 @@ export default class Application {
     /** angulo de los paneles: [0, 360] */
     panelsAngle: 135,
     /** velocidad de rotación del anillo: [0, 100] */
-    ringSpeed: 20,
+    ringSpeed: 2,
     /** numero de modulos en el anillo: [2, 8] */
     ringModules: 4,
 
@@ -64,7 +64,7 @@ export default class Application {
       .add(this.guiState, "panelsAngle", 0, 360, 1)
       .onFinishChange(this.onGUIChange.bind(this, "panelsAngle"));
     this.gui
-      .add(this.guiState, "ringSpeed", 0, 100, 1)
+      .add(this.guiState, "ringSpeed", -10, 10, 1)
       .onFinishChange(this.onGUIChange.bind(this, "ringSpeed"));
     this.gui
       .add(this.guiState, "ringModules", 2, 8, 1)
@@ -84,6 +84,18 @@ export default class Application {
       case "selectedCamera":
         console.log("selecciono camara:", value);
         break;
+      case "panelRows":
+        console.log("cambio filas de paneles", value);
+        this.estacion.actualizarContexto(this.guiState);
+      case "panelsAngle":
+        console.log("cambio angulo de paneles", value);
+        this.estacion.actualizarContexto(this.guiState);
+      case "ringSpeed":
+        console.log("cambio velocidad anillo", value);
+        this.estacion.actualizarContexto(this.guiState);
+      case "ringModules":
+        console.log("cambio numero de modulos", value);
+        this.estacion.actualizarContexto(this.guiState);
       default:
         console.log(param, value, this.guiState);
         break;
@@ -124,7 +136,10 @@ export default class Application {
 
     this.rootObject.addChild(tierra);
 
-    const estacion = new EstacionEspacial(this.engine);
+    const estacion = (this.estacion = new EstacionEspacial(
+      this.engine,
+      this.guiState
+    ));
     estacion.setPosition(0, 0, 0);
 
     this.rootObject.addChild(estacion);

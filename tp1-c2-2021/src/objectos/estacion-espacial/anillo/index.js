@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix";
 import { Arco } from "../../../primitivas/curvas/arco";
 import Recorrido from "../../../primitivas/curvas/recorrido";
 import { Rect2D } from "../../../primitivas/curvas/recta2d";
@@ -13,35 +14,26 @@ export default class Anillo extends Objeto3D {
 
   color = [1.0, 0, 0];
 
-  constructor(engine) {
+  anguloRotacion = 0;
+
+  constructor(engine, cantModulos = 6, velocidadRotacion = 0) {
     super(engine);
 
-    const radioAnillo = 8;
-    const cantModulos = 8;
-    const deltaAngulo = (2 * Math.PI) / cantModulos;
+    debugger;
+    this.cantModulos = cantModulos;
+    this.velocidadRotacion = velocidadRotacion;
+
+    this.radioAnillo = 8;
 
     const centro = this.getCentro();
     centro.color = vec3.fromValues(0.8, 0.8, 0.0);
     this.addChild(centro);
 
-    const cilindroCircular = this.getCilindroCircular(0.3, radioAnillo);
+    const cilindroCircular = this.getCilindroCircular(0.3, this.radioAnillo);
     this.addChild(cilindroCircular);
 
-    for (let i = 0; i < cantModulos; i++) {
-      const conjunto = new Objeto3D(this.engine);
-
-      const escalera = this.getEscalera(8);
-      escalera.setRotation(Math.PI / 2, 0, 0);
-      escalera.setPosition(0, radioAnillo / 2, 0);
-      conjunto.addChild(escalera);
-
-      const modulo = this.getModulo(radioAnillo, Math.PI / cantModulos);
-      modulo.setRotation(0, 0, Math.PI / 2 - Math.PI / 2 / cantModulos);
-      conjunto.addChild(modulo);
-
-      conjunto.setRotation(0, 0, deltaAngulo * i);
-      this.addChild(conjunto);
-    }
+    this.modulos = this.generarModulos();
+    this.modulos.forEach((modulo) => this.addChild(modulo));
 
     this.setupBuffers();
   }
@@ -198,7 +190,54 @@ export default class Anillo extends Objeto3D {
     return objeto;
   }
 
-  actualizarContexto(contexto) {
-    //
+  generarModulos() {
+    const modulos = [];
+    for (let i = 0; i < this.cantModulos; i++) {
+      const conjunto = this.generarConjunto(i);
+      modulos.push(conjunto);
+    }
+    return modulos;
+  }
+
+  generarConjunto(i) {
+    const deltaAngulo = (2 * Math.PI) / this.cantModulos;
+
+    const conjunto = new Objeto3D(this.engine);
+
+    const escalera = this.getEscalera(8);
+    escalera.setRotation(Math.PI / 2, 0, 0);
+    escalera.setPosition(0, this.radioAnillo / 2, 0);
+    conjunto.addChild(escalera);
+
+    const modulo = this.getModulo(this.radioAnillo, Math.PI / this.cantModulos);
+    modulo.setRotation(0, 0, Math.PI / 2 - Math.PI / 2 / this.cantModulos);
+    conjunto.addChild(modulo);
+
+    conjunto.setRotation(0, 0, deltaAngulo * i);
+
+    return conjunto;
+  }
+
+  setVelocidad(vel = 0) {
+    this.velocidadRotacion = vel;
+  }
+
+  setModules(m = 4) {
+    this.cantModulos = m;
+
+    this.modulos.forEach((modulo) => this.removeChild(modulo));
+    this.modulos = this.generarModulos();
+    this.modulos.forEach((modulo) => this.addChild(modulo));
+  }
+
+  draw(parentModelMatrix = mat4.create()) {
+    const dosPI = 2 * Math.PI;
+    this.anguloRotacion += this.velocidadRotacion;
+    this.anguloRotacion = this.anguloRotacion % dosPI;
+
+    this.setRotation(0, 0, this.anguloRotacion);
+    this.updateModelMatrix();
+    // sigo con el draw habitual
+    super.draw(parentModelMatrix);
   }
 }

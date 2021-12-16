@@ -13,7 +13,7 @@ export default class Superficie {
     return [u, v];
   }
 
-  getArrayBuffers(rows = 128, columns = 128) {
+  getArrayBuffers(rows = 64, columns = 64) {
     if (this.buffers) {
       return this.buffers;
     }
