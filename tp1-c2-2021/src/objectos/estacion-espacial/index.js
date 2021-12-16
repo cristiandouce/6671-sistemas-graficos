@@ -33,7 +33,6 @@ export default class EstacionEspacial extends Objeto3D {
     const viejo = this.context;
     const nuevo = contexto;
 
-    debugger;
     if (
       nuevo.panelRows != viejo.panelRows ||
       nuevo.panelsAngle !== viejo.panelsAngle

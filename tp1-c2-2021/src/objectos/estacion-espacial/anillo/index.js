@@ -19,7 +19,6 @@ export default class Anillo extends Objeto3D {
   constructor(engine, cantModulos = 6, velocidadRotacion = 0) {
     super(engine);
 
-    debugger;
     this.cantModulos = cantModulos;
     this.velocidadRotacion = velocidadRotacion;
 

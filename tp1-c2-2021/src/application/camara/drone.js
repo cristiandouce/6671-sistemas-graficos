@@ -70,54 +70,62 @@ export class DroneCameraControl {
      */
 
     switch (e.key) {
-      case "ArrowUp":
-      case "u": // up
+      // plano xz
+      case "w":
         this.state.zVelTarget = DELTA_TRASLACION;
         break;
-      case "ArrowDown":
-      case "j": // down
+      case "s":
         this.state.zVelTarget = -DELTA_TRASLACION;
         break;
-
-      case "ArrowLeft":
-      case "h": // left
+      case "a":
         this.state.xVelTarget = DELTA_TRASLACION;
         break;
-      case "ArrowRight":
-      case "k": // right
+      case "d":
         this.state.xVelTarget = -DELTA_TRASLACION;
         break;
 
-      case "o":
-      case "PageUp": // PgUp
+      // eje y
+      case "q":
         this.state.yVelTarget = DELTA_TRASLACION;
         break;
-      case "l":
-      case "PageDown": // PgDw
+      case "e":
         this.state.yVelTarget = -DELTA_TRASLACION;
         break;
 
-      case "s":
-        this.state.xRotVelTarget = DELTA_ROTACION;
-        break;
-      case "w":
-        this.state.xRotVelTarget = -DELTA_ROTACION;
-        break;
-
-      case "a":
+      // guinada
+      case "ArrowLeft":
+      case "j":
         this.state.yRotVelTarget = DELTA_ROTACION;
         break;
-      case "d":
+      case "ArrowRight":
+
+      case "l":
         this.state.yRotVelTarget = -DELTA_ROTACION;
         break;
 
-      case "q":
+      // cabezeo
+      case "ArrowUp":
+
+      case "i":
+        this.state.xRotVelTarget = DELTA_ROTACION;
+        break;
+      case "ArrowDown":
+
+      case "k":
+        this.state.xRotVelTarget = -DELTA_ROTACION;
+        break;
+
+      // alabeo
+      case "PageUp":
+      case "u":
         this.state.zRotVelTarget = DELTA_ROTACION;
         break;
-      case "e":
+      case "PageDown":
+      case "o":
         this.state.zRotVelTarget = -DELTA_ROTACION;
         break;
 
+      // controles
       case "r":
         this.reset();
         break;
@@ -125,6 +133,49 @@ export class DroneCameraControl {
       case "t":
         this.rotation = vec3.create();
         this.state = Object.assign({}, INITIAL_STATE);
+        break;
+    }
+  }
+
+  keyUpListener(e) {
+    switch (e.key) {
+      // plano xz
+      case "a":
+      case "d":
+        this.state.xVelTarget = 0;
+        break;
+      case "w":
+      case "s":
+        this.state.zVelTarget = 0;
+        break;
+
+      // eje y
+      case "q":
+      case "e":
+        this.state.yVelTarget = 0;
+
+      // guinada
+      case "ArrowLeft":
+      case "j":
+      case "ArrowRight":
+      case "l":
+        this.state.yRotVelTarget = 0;
+        break;
+
+      // cabezeo
+      case "ArrowUp":
+      case "i":
+      case "ArrowDown":
+      case "k":
+        this.state.xRotVelTarget = 0;
+        break;
+
+      // alabeo
+      case "PageUp":
+      case "u":
+      case "PageDown":
+      case "o":
+        this.state.zRotVelTarget = 0;
         break;
     }
   }
@@ -159,52 +210,6 @@ export class DroneCameraControl {
     mat4.multiply(this.worldMatrix, this.worldMatrix, this.rotationMatrix);
 
     return this;
-  }
-
-  keyUpListener(e) {
-    switch (e.key) {
-      case "ArrowUp":
-      case "u":
-      case "ArrowDown":
-      case "j":
-        this.state.zVelTarget = 0;
-        break;
-
-      case "ArrowLeft":
-      case "h":
-      case "ArrowRight":
-      case "k":
-        this.state.xVelTarget = 0;
-        break;
-
-      case "o":
-      case "l":
-      case "PageDown":
-      case "PageUp":
-        this.state.yVelTarget = 0;
-        break;
-
-      case "a":
-        this.state.yRotVelTarget = 0;
-        break;
-      case "d":
-        this.state.yRotVelTarget = 0;
-        break;
-
-      case "w":
-        this.state.xRotVelTarget = 0;
-        break;
-      case "s":
-        this.state.xRotVelTarget = 0;
-        break;
-
-      case "q":
-        this.state.zRotVelTarget = 0;
-        break;
-      case "e":
-        this.state.zRotVelTarget = 0;
-        break;
-    }
   }
 
   update() {
