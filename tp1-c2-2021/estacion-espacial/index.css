@@ -2,7 +2,7 @@ body {
   background-color: grey;
 }
 canvas {
-  background-color: white;
+  background-color: rgb(10, 5, 40);
   display: block;
   margin-left: auto;
   margin-right: auto;
