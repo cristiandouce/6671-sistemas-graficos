@@ -31,20 +31,24 @@ export class OrbitalCamera {
     this.keyDownListener = this.keyDownListener.bind(this);
   }
 
+  get target() {
+    return document.querySelector("canvas");
+  }
+
   bindListeners() {
-    document.addEventListener("mousemove", this.mouseMoveListener);
-    document.addEventListener("mousedown", this.mouseDownListener);
-    document.addEventListener("mouseup", this.mouseUpListener);
-    document.addEventListener("wheel", this.mouseWheelListener);
-    document.addEventListener("keydown", this.keyDownListener);
+    this.target.addEventListener("mousemove", this.mouseMoveListener);
+    this.target.addEventListener("mousedown", this.mouseDownListener);
+    this.target.addEventListener("mouseup", this.mouseUpListener);
+    this.target.addEventListener("wheel", this.mouseWheelListener);
+    this.target.addEventListener("keydown", this.keyDownListener);
   }
 
   unbindListeners() {
-    document.removeEventListener("mousemove", this.mouseMoveListener);
-    document.removeEventListener("mousedown", this.mouseDownListener);
-    document.removeEventListener("mouseup", this.mouseUpListener);
-    document.removeEventListener("wheel", this.mouseWheelListener);
-    document.removeEventListener("keydown", this.keyDownListener);
+    this.target.removeEventListener("mousemove", this.mouseMoveListener);
+    this.target.removeEventListener("mousedown", this.mouseDownListener);
+    this.target.removeEventListener("mouseup", this.mouseUpListener);
+    this.target.removeEventListener("wheel", this.mouseWheelListener);
+    this.target.removeEventListener("keydown", this.keyDownListener);
   }
 
   /**
