@@ -2,6 +2,7 @@ import dat from "dat.gui";
 import CapsulaEspacial from "../objectos/capsula";
 import Drone from "../objectos/drone";
 import EstacionEspacial from "../objectos/estacion-espacial";
+import { Tierra } from "../objectos/tierra";
 
 import Objeto3D from "../primitivas/objetos/base";
 import Plano from "../primitivas/objetos/plano";
@@ -118,6 +119,11 @@ export default class Application {
   }
 
   initializeScene() {
+    const tierra = new Tierra(this.engine, 500);
+    tierra.setPosition(10, -580, 10);
+
+    this.rootObject.addChild(tierra);
+
     const estacion = new EstacionEspacial(this.engine);
     estacion.setPosition(0, 0, 0);
 
@@ -134,7 +140,7 @@ export default class Application {
     plano.setPosition(0, 0, 0);
     plano.setRenderMode(this.engine.gl.LINE_LOOP);
 
-    this.rootObject.addChild(plano);
+    // this.rootObject.addChild(plano);
 
     // determino como target de las camaras orbitales
     // el centro de la estacion, y los paneles solares
@@ -155,6 +161,7 @@ export default class Application {
       estacion.getWorldPosition(),
       estacion.paneles.getWorldPosition(),
       capsula.getWorldPosition(),
+      tierra.getWorldPosition(),
       prueba.getWorldPosition()
     );
   }

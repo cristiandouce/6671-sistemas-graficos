@@ -3,7 +3,7 @@ import { mat4, vec3 } from "gl-matrix";
 export class OrbitalCamera {
   static FACTOR_VELOCIDAD = 0.01;
   static MIN_RADIUS = 2;
-  static MAX_RADIUS = 100;
+  static MAX_RADIUS = 80;
 
   initialPosition = [0, 10, 10];
   targetPosition = [0, 0, 0];

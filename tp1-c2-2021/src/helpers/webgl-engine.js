@@ -66,7 +66,7 @@ export default class GLEngine {
   setup() {
     this.gl.enable(this.gl.DEPTH_TEST);
     //set the clear color
-    this.gl.clearColor(0.1, 0.1, 0.2, 1.0);
+    this.gl.clearColor(0.9, 0.0, 0.8, 1.0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -78,11 +78,11 @@ export default class GLEngine {
       45,
       this.canvas.width / this.canvas.height,
       0.1,
-      100.0
+      200.0
     );
 
-    mat4.identity(this.viewMatrix);
-    mat4.translate(this.viewMatrix, this.viewMatrix, [0.0, 0.0, -10.0]);
+    // mat4.identity(this.viewMatrix);
+    // mat4.translate(this.viewMatrix, this.viewMatrix, [0.0, 0.0, -10.0]);
   }
 
   initShaders() {

@@ -101,6 +101,7 @@ export class SuperficieBarrido extends Superficie {
   }
 
   getPosicion(u, v) {
+    debugger;
     const pos = this.shape.getPosition(u);
     const levelMatrix = this.getLevelMatrix(v);
     vec3.transformMat4(pos, pos, levelMatrix);
