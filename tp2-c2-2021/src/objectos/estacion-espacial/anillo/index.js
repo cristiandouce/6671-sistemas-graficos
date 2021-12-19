@@ -25,10 +25,13 @@ export default class Anillo extends Objeto3D {
     this.radioAnillo = 8;
 
     const centro = this.getCentro();
-    centro.color = vec3.fromValues(0.8, 0.8, 0.0);
+    centro.color = vec3.fromValues(1, 0.5, 0.0);
     this.addChild(centro);
 
     const cilindroCircular = this.getCilindroCircular(0.3, this.radioAnillo);
+    // cilindroCircular.color = [1, 1, 1];
+    cilindroCircular.color = [0.5, 0.5, 0.5];
+    cilindroCircular.setTexture(this.engine.getTexture("anillo"));
     this.addChild(cilindroCircular);
 
     this.modulos = this.generarModulos();
@@ -79,7 +82,7 @@ export default class Anillo extends Objeto3D {
 
   getEscalera(longitud = 10) {
     const escalera = new Objeto3D(this.engine);
-    const color = [0.9, 0.7, 0.8];
+    const color = [0.8, 0.8, 0.8];
 
     // definimos los hijos
     const ancho = this.getFactorizedNumber(0.05);
@@ -132,12 +135,35 @@ export default class Anillo extends Objeto3D {
     const cilindroCircular = new Objeto3D(this.engine);
     cilindroCircular.color = color;
     cilindroCircular.superficie = superficie;
+    cilindroCircular.superficie.getCoordenadasTextura = function (u, v) {
+      const TWO_PI = 2 * Math.PI;
+      // const repeticionesCilindro = 1; // 4 veces replicado
+      // const repeticionesArco = TWO_PI * 100000; // lo quiero replicado 10 veces en arco;
+      // const nu = ((u * repeticionesCilindro * TWO_PI) % TWO_PI) / TWO_PI;
+      // const nv = ((v * repeticionesArco * TWO_PI) % TWO_PI) / TWO_PI;
+      const perimetroArco = radioArco * TWO_PI;
+      const perimetroCilindro = radioCilindro * TWO_PI;
+
+      const posU = u * perimetroCilindro;
+      const posV = v * perimetroArco;
+
+      const escalaU = 4;
+      const escalaV = 64;
+
+      const nu = ((escalaU * posU) % perimetroCilindro) / perimetroCilindro;
+      const nv = ((escalaV * posV) % perimetroArco) / perimetroArco;
+
+      return [nu, nv];
+    };
+    cilindroCircular.superficie.buffers = null;
+
+    cilindroCircular.setTexture(this.engine.getTexture("anillo"));
     cilindroCircular.setupBuffers();
     return cilindroCircular;
   }
 
   getModulo(radioArco = 8, anguloArco = Math.PI / 4) {
-    const ancho = this.getFactorizedNumber(0.7);
+    const ancho = this.getFactorizedNumber(1);
     const alto = ancho * 3;
     const delta = ancho * 0.2;
 
@@ -180,10 +206,19 @@ export default class Anillo extends Objeto3D {
 
     const recorrido = new Arco(radioArco, anguloArco);
     const superficie = new SuperficieBarrido(forma, recorrido, true, true);
-
+    superficie.getCoordenadasTextura = (u, v) => {
+      const delta = 0.05; // desplazamiento en u para el mapeo
+      const escala = 2; // desplazamiento en u para el mapeo
+      let nu = escala * (u + delta);
+      if (nu > 1) nu %= 1;
+      return [nu, v];
+    };
+    superficie.buffers = null;
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
-    objeto.color = [0.3, 0.7, 0.7];
+    // objeto.color = [0.3, 0.7, 0.7];
+    objeto.color = [0, 0, 0];
+    objeto.setTexture(this.engine.getTexture("modulo"));
     objeto.setupBuffers();
 
     return objeto;

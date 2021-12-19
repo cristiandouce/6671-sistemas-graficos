@@ -48,7 +48,11 @@ const config = {
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new CopyPlugin({
-      patterns: [{ from: "src/index.html" }, { from: "src/index.css" }],
+      patterns: [
+        { from: "src/index.html" },
+        { from: "src/index.css" },
+        { from: "src/texturas", to: "texturas/" },
+      ],
     }),
   ],
 };

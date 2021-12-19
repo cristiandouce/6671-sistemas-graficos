@@ -127,7 +127,7 @@ export class SuperficieBarrido extends Superficie {
   }
 
   getCoordenadasTextura(u, v) {
-    return [u, v];
+    return [v, u];
   }
 
   getArrayBuffers(rows = 128, columns = 128) {
@@ -187,7 +187,7 @@ export class SuperficieBarrido extends Superficie {
 
         // TODO: parametrizar el UV buffer, para poder dar textura a las capas
         // estamos en el `v=0` al agregar la tapa inferior.
-        textureBuffer.push(i / columns, 0);
+        textureBuffer.push(0, 0);
       }
 
       // doplicamos la primer fila de la superficie, tanto posición, normal y textura
@@ -206,7 +206,7 @@ export class SuperficieBarrido extends Superficie {
 
         // TODO: parametrizar el UV buffer, para poder dar textura a las capas
         // estamos en el `v=0` al agregar la tapa inferior.
-        textureBuffer.push(i / columns, 0);
+        textureBuffer.push(0, 0);
       }
 
       // aumentamos el numero de filas en 2
@@ -268,7 +268,7 @@ export class SuperficieBarrido extends Superficie {
 
         // TODO: parametrizar el UV buffer, para poder dar textura a las capas
         // estamos en el `v=0` al agregar la tapa inferior.
-        textureBuffer.push(i / columns, 1);
+        textureBuffer.push(0, 1);
       }
 
       // agregamos una fila completa con el centro de masa calculado, con posicion, normal y textura
@@ -287,7 +287,7 @@ export class SuperficieBarrido extends Superficie {
 
         // TODO: parametrizar el UV buffer, para poder dar textura a las capas
         // estamos en el `v=1` al agregar la tapa inferior.
-        textureBuffer.push(i / columns, 1);
+        textureBuffer.push(0, 1);
       }
       // aumentamos el numero de filas en 2
       newRowCount += 2;

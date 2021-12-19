@@ -1,4 +1,5 @@
 import { mat4, quat, vec3 } from "gl-matrix";
+import { Textura } from "../../helpers/texture";
 export default class Objeto3D {
   /**
    * @type {import("../../helpers/webgl-engine").default}
@@ -69,11 +70,16 @@ export default class Objeto3D {
   renderMode = 5;
 
   /**
+   * @type {import("../../helpers/texture").Textura}
+   */
+  texture = null;
+  /**
    *
    * @param {import("../../helpers/webgl-engine").default} engine
    */
   constructor(engine) {
     this.engine = engine;
+    this.texture = new Textura(this.engine);
 
     this.setupBuffers();
     // revisar la posición de este llamado abajo
@@ -281,12 +287,22 @@ export default class Objeto3D {
     this.renderMode = renderMode;
   }
 
+  /**
+   *
+   * @param {import("../../helpers/texture").Textura} texture
+   */
+  setTexture(texture) {
+    this.texture = texture;
+  }
+
   drawScene() {
     const { gl, glProgram } = this.engine;
 
     if (this.buffers.index.length === 0) {
       return;
     }
+
+    this.texture.bind();
 
     const vertexPositionAttribute = gl.getAttribLocation(
       glProgram,
@@ -320,8 +336,9 @@ export default class Objeto3D {
 
     const vertexUVAttribute = gl.getAttribLocation(glProgram, "aVertexUV");
     gl.enableVertexAttribArray(vertexUVAttribute);
+
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.texture);
-    gl.vertexAttribPointer(vertexUVAttribute, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(vertexUVAttribute, 2, gl.FLOAT, false, 0, 0);
 
     // bindeo el indexBuffer
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffers.index);

@@ -14,7 +14,7 @@ export default class Nucleo extends Objeto3D {
 
   color = [1.0, 0, 0];
 
-  largoModulo = 3;
+  largoModulo = 4;
   largoConector = 1;
   radioEsfera = 1.3;
   anguloCorteEsfera = Math.PI / 5;
@@ -34,6 +34,7 @@ export default class Nucleo extends Objeto3D {
 
     const moduloPaneles = this.getModuloCilindro(largoModulo);
     moduloPaneles.setPosition(0, 0, largoModulo + largoConector);
+
     this.addChild(moduloPaneles);
 
     // hacia contra peso
@@ -54,6 +55,8 @@ export default class Nucleo extends Objeto3D {
         radioEsfera * Math.cos(anguloCorteEsfera)
       )
     );
+    moduloEsferico.color = [0, 0, 0];
+    moduloEsferico.setTexture(this.engine.getTexture("modulo-esferico"));
     this.addChild(moduloEsferico);
 
     this.setupBuffers();
@@ -108,7 +111,15 @@ export default class Nucleo extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
-    objeto.color = [0.7, 0.2, 0.8];
+    objeto.superficie.getCoordenadasTextura = (u, v) => {
+      const escala = 2;
+      let nu = (escala * u) % 1;
+      return [nu, v];
+    };
+
+    objeto.superficie.buffers = null;
+    // objeto.color = [0.5, 0.5, 0.5];
+    objeto.setTexture(this.engine.getTexture("anillo"));
     objeto.setupBuffers();
 
     return objeto;
@@ -141,7 +152,10 @@ export default class Nucleo extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = new SuperficieBarrido(forma, recorrido, true, true);
-    objeto.color = [1, 0.8, 0.6];
+    // objeto.color = [1, 0.8, 0.6];
+    objeto.color = [0, 0, 0];
+    objeto.setTexture(this.engine.getTexture("modulo-cilindrico"));
+
     objeto.setupBuffers();
 
     return objeto;
@@ -176,6 +190,8 @@ export default class Nucleo extends Objeto3D {
     // const recorrido = new RectXY(0, (-radio / 2) * cos, 0, (radio / 2) * cos);
     const recorrido = new Arco(0.000001, -Math.PI * 2);
     const superficie = new SuperficieBarrido(forma, recorrido, true, true);
+    superficie.getCoordenadasTextura = (u, v) => [u, v];
+    superficie.buffers = null;
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;

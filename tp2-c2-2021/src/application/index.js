@@ -2,6 +2,8 @@ import dat from "dat.gui";
 import CapsulaEspacial from "../objectos/capsula";
 import Drone from "../objectos/drone";
 import EstacionEspacial from "../objectos/estacion-espacial";
+import { Luna } from "../objectos/luna";
+import { Sol } from "../objectos/sol";
 import { Tierra } from "../objectos/tierra";
 
 import Objeto3D from "../primitivas/objetos/base";
@@ -21,7 +23,7 @@ export default class Application {
     /** angulo de los paneles: [0, 360] */
     panelsAngle: 135,
     /** velocidad de rotación del anillo: [0, 100] */
-    ringSpeed: 2,
+    ringSpeed: 0,
     /** numero de modulos en el anillo: [2, 8] */
     ringModules: 4,
 
@@ -39,6 +41,7 @@ export default class Application {
     this.cameras = {
       "orbital 1": new OrbitalCamera([-30, -30, 30], [0, 0, 0]).attach(),
       "orbital 2": new OrbitalCamera([-30, -30, 30], [0, 0, 0]).attach(),
+      "orbital capsula": new OrbitalCamera([-30, -30, 30], [0, 0, 0]).attach(),
       drone: new DroneCameraControl(
         [0, 5, -15],
         [0, Math.PI * 100, 0]
@@ -52,6 +55,7 @@ export default class Application {
     this.initializeGUI();
     this.bindGlobalControls();
     this.initializeEngine();
+    this.loadTextures();
     this.initializeScene();
     this.tick();
   }
@@ -70,7 +74,12 @@ export default class Application {
       .add(this.guiState, "ringModules", 2, 8, 1)
       .onFinishChange(this.onGUIChange.bind(this, "ringModules"));
     this.cameraController = this.gui
-      .add(this.guiState, "selectedCamera", ["orbital 1", "orbital 2", "drone"])
+      .add(this.guiState, "selectedCamera", [
+        "orbital 1",
+        "orbital 2",
+        "drone",
+        "orbital capsula",
+      ])
       .onFinishChange(this.onGUIChange.bind(this, "selectedCamera"));
   }
 
@@ -121,6 +130,9 @@ export default class Application {
       case "3":
         this.guiState.selectedCamera = "drone";
         break;
+      case "4":
+        this.guiState.selectedCamera = "orbital capsula";
+        break;
     }
 
     this.cameraController.updateDisplay();
@@ -130,11 +142,73 @@ export default class Application {
     this.engine.init();
   }
 
+  loadTextures() {
+    const textures = [
+      {
+        name: "tierra",
+        url: "texturas/tierra.jpg",
+      },
+      { name: "luna", url: "texturas/luna.jpg" },
+      {
+        name: "sol",
+        url: "texturas/sun.jpg",
+      },
+      {
+        name: "shiphull",
+        url: "texturas/shiphull.jpg",
+      },
+      {
+        name: "panel-solar",
+        url: "texturas/paneles_solares.jpg",
+      },
+      {
+        name: "modulo",
+        url: "texturas/modulo.jpg",
+      },
+      {
+        name: "modulo-cilindrico",
+        url: "texturas/modulo-cilindrico.jpg",
+      },
+      {
+        name: "modulo-esferico",
+        url: "texturas/modulo-esferico.jpg",
+      },
+      {
+        name: "anillo",
+        // url: "texturas/anillo/TexturesCom_MetalFloorsBare0063_2_seamless_S.jpg",
+        // url: "texturas/anillo/TexturesCom_MetalFloorsBare0066_10_S.png",
+        // url: "texturas/anillo/TexturesCom_MetalFloorsBare0066_17_M.png",
+        url: "texturas/anillo/TexturesCom_MetalFloorsBare0066_19_seamless_S.png",
+      },
+    ];
+
+    this.engine.loadTextures(textures);
+  }
+
   initializeScene() {
     const tierra = new Tierra(this.engine, 500);
-    tierra.setPosition(10, -580, 10);
+    tierra.setPosition(10, -700, 10);
+    tierra.color = [0, 0, 0];
+    tierra.setTexture(this.engine.getTexture("tierra"));
 
     this.rootObject.addChild(tierra);
+
+    const luna = new Luna(this.engine, 50);
+    luna.setPosition(350, -150, 350);
+    luna.color = [0, 0, 0];
+
+    this.rootObject.addChild(luna);
+
+    const sol = new Sol(this.engine, 200);
+    sol.setPosition(-700, -150, 700);
+    sol.setRotation(Math.PI / 3, Math.PI / 4, Math.PI / 3);
+
+    sol.color = [0, 0, 0];
+    // const sol = new Sol(this.engine, 10);
+    // sol.setPosition(-70, -15, 70);
+    // sol.color = [0, 0, 0];
+
+    this.rootObject.addChild(sol);
 
     const estacion = (this.estacion = new EstacionEspacial(
       this.engine,
@@ -161,6 +235,9 @@ export default class Application {
     // el centro de la estacion, y los paneles solares
     this.cameras["orbital 1"].setTarget(estacion.getWorldPosition());
     this.cameras["orbital 2"].setTarget(estacion.paneles.getWorldPosition());
+    this.cameras["orbital capsula"].setTarget(
+      drone.children[0].getWorldPosition()
+    );
 
     // PRUEBAS
     const prueba = new Prueba(this.engine);

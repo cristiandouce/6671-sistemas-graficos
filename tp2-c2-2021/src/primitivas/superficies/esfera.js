@@ -28,6 +28,6 @@ export default class Esfera extends Superficie {
   }
 
   getCoordenadasTextura(u, v) {
-    return [u, v];
+    return [v, u];
   }
 }

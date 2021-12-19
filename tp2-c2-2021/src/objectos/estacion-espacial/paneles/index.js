@@ -53,7 +53,8 @@ export default class PanelesSolares extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
-    objeto.color = [1, 0.8, 0.9];
+    objeto.color = [0.5, 0.5, 0.5];
+
     objeto.setRotation(-Math.PI / 2, 0, Math.PI / 2);
 
     objeto.setupBuffers();
@@ -61,14 +62,10 @@ export default class PanelesSolares extends Objeto3D {
     return objeto;
   }
 
-  actualizarContexto(contexto) {
-    //
-  }
-
   getFilaPanel() {
     const fila = new Objeto3D(this.engine);
     const { largoPanel = 6, anchoPanel = 1, altoPanel = 0.2 } = this;
-    const color = [0.6, 0.3, 0];
+    const color = [0.5, 0.5, 0.5];
     const radioEje = altoPanel / 2;
     const largoEje = 2;
 
@@ -83,12 +80,15 @@ export default class PanelesSolares extends Objeto3D {
     fila.addChild(ejePaneles);
 
     const panelIzq = this.getPanel(largoPanel, anchoPanel, altoPanel);
-    panelIzq.color = color;
+    panelIzq.color = [0, 0, 0];
+    panelIzq.setTexture(this.engine.getTexture("panel-solar"));
+
     panelIzq.setPosition(-largoPanel / 2 - largoEje / 2, 0, 0);
     fila.addChild(panelIzq);
 
     const panelDer = this.getPanel(largoPanel, anchoPanel, altoPanel);
-    panelDer.color = color;
+    panelDer.color = [0, 0, 0];
+    panelDer.setTexture(this.engine.getTexture("panel-solar"));
     panelDer.setPosition(largoPanel / 2 + largoEje / 2, 0, 0);
     fila.addChild(panelDer);
 

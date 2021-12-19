@@ -26,7 +26,7 @@ export class SuperficieRevolucion extends Superficie {
     this.pointsPerLevel = pointsPerLevel;
 
     // cache buffers
-    this.buffers = this.getArrayBuffers();
+    this.buffers = null;
   }
 
   getRotationMatrix(v) {

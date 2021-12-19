@@ -61,8 +61,9 @@ export default class CapsulaEspacial extends Objeto3D {
     const superficie = new SuperficieRevolucion(forma);
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
-    objeto.color = [1, 0.8, 0.6];
-
+    // objeto.color = [1, 0.8, 0.6];
+    objeto.color = [0, 0, 0];
+    objeto.setTexture(this.engine.getTexture("shiphull"));
     objeto.setupBuffers(200, 200);
 
     return objeto;

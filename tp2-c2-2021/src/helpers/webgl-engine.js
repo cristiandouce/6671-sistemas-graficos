@@ -1,4 +1,5 @@
 import { mat4 } from "gl-matrix";
+import { ManagerTexturas } from "./texture";
 
 // TODO: revisar las responsabilidades de esta clase
 // tranquilamente podría llamarla "Mundo" o simplemente "Programa"
@@ -38,6 +39,7 @@ export default class GLEngine {
   constructor({ canvas, shaders }) {
     this.canvas = canvas;
     this.shaders = shaders;
+    this.textureManager = new ManagerTexturas(this);
     try {
       this.canvas.width = "1280";
       this.canvas.height = "1024";
@@ -78,7 +80,7 @@ export default class GLEngine {
       45,
       this.canvas.width / this.canvas.height,
       0.1,
-      200.0
+      2000.0
     );
 
     // mat4.identity(this.viewMatrix);
@@ -128,6 +130,16 @@ export default class GLEngine {
       );
     }
     return shader;
+  }
+
+  loadTextures(textures = []) {
+    textures.forEach(({ name, url }) => {
+      this.textureManager.addTexture(name, url);
+    });
+  }
+
+  getTexture(name) {
+    return this.textureManager.getTexture(name);
   }
 
   // esto de momento parece pertenecer al engine, pq tiene conocimiento no solo
