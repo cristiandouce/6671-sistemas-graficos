@@ -1,4 +1,5 @@
 import dat from "dat.gui";
+import { Material } from "../helpers/material";
 import CapsulaEspacial from "../objectos/capsula";
 import Drone from "../objectos/drone";
 import EstacionEspacial from "../objectos/estacion-espacial";
@@ -56,8 +57,10 @@ export default class Application {
     this.bindGlobalControls();
     this.initializeEngine();
     this.loadTextures();
-    this.initializeScene();
-    this.tick();
+    this.engine.ready(() => {
+      this.initializeScene();
+      this.tick();
+    });
   }
 
   initializeGUI() {
@@ -189,7 +192,12 @@ export default class Application {
     const tierra = new Tierra(this.engine, 500);
     tierra.setPosition(10, -700, 10);
     tierra.color = [0, 0, 0];
-    tierra.setTexture(this.engine.getTexture("tierra"));
+    tierra.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("tierra"),
+      })
+    );
 
     this.rootObject.addChild(tierra);
 

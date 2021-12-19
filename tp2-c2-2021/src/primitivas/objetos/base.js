@@ -1,4 +1,5 @@
 import { mat4, quat, vec3 } from "gl-matrix";
+import { Material } from "../../helpers/material";
 import { Textura } from "../../helpers/texture";
 export default class Objeto3D {
   /**
@@ -70,16 +71,16 @@ export default class Objeto3D {
   renderMode = 5;
 
   /**
-   * @type {import("../../helpers/texture").Textura}
+   * @type {import("../../helpers/material").Material}
    */
-  texture = null;
+  material = null;
   /**
    *
    * @param {import("../../helpers/webgl-engine").default} engine
    */
   constructor(engine) {
     this.engine = engine;
-    this.texture = new Textura(this.engine);
+    this.material = new Material(this.engine);
 
     this.setupBuffers();
     // revisar la posición de este llamado abajo
@@ -289,10 +290,10 @@ export default class Objeto3D {
 
   /**
    *
-   * @param {import("../../helpers/texture").Textura} texture
+   * @param {import("../../helpers/material").Material} material
    */
-  setTexture(texture) {
-    this.texture = texture;
+  setMaterial(material) {
+    this.material = material;
   }
 
   drawScene() {
@@ -302,7 +303,8 @@ export default class Objeto3D {
       return;
     }
 
-    this.texture.bind();
+    debugger;
+    this.material.bind();
 
     const vertexPositionAttribute = gl.getAttribLocation(
       glProgram,

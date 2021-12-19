@@ -1,4 +1,5 @@
 import { mat4 } from "gl-matrix";
+import { Material } from "../../../helpers/material";
 import { Arco } from "../../../primitivas/curvas/arco";
 import Recorrido from "../../../primitivas/curvas/recorrido";
 import { Rect2D } from "../../../primitivas/curvas/recta2d";
@@ -29,9 +30,6 @@ export default class Anillo extends Objeto3D {
     this.addChild(centro);
 
     const cilindroCircular = this.getCilindroCircular(0.3, this.radioAnillo);
-    // cilindroCircular.color = [1, 1, 1];
-    cilindroCircular.color = [0.5, 0.5, 0.5];
-    cilindroCircular.setTexture(this.engine.getTexture("anillo"));
     this.addChild(cilindroCircular);
 
     this.modulos = this.generarModulos();
@@ -132,10 +130,10 @@ export default class Anillo extends Objeto3D {
     const recorrido = new Arco(radioArco, 2 * Math.PI);
 
     const superficie = new SuperficieBarrido(forma, recorrido);
-    const cilindroCircular = new Objeto3D(this.engine);
-    cilindroCircular.color = color;
-    cilindroCircular.superficie = superficie;
-    cilindroCircular.superficie.getCoordenadasTextura = function (u, v) {
+    const objeto = new Objeto3D(this.engine);
+    objeto.color = color;
+    objeto.superficie = superficie;
+    objeto.superficie.getCoordenadasTextura = function (u, v) {
       const TWO_PI = 2 * Math.PI;
       // const repeticionesCilindro = 1; // 4 veces replicado
       // const repeticionesArco = TWO_PI * 100000; // lo quiero replicado 10 veces en arco;
@@ -155,11 +153,17 @@ export default class Anillo extends Objeto3D {
 
       return [nu, nv];
     };
-    cilindroCircular.superficie.buffers = null;
+    objeto.superficie.buffers = null;
 
-    cilindroCircular.setTexture(this.engine.getTexture("anillo"));
-    cilindroCircular.setupBuffers();
-    return cilindroCircular;
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("anillo"),
+      })
+    );
+
+    objeto.setupBuffers();
+    return objeto;
   }
 
   getModulo(radioArco = 8, anguloArco = Math.PI / 4) {
@@ -218,7 +222,12 @@ export default class Anillo extends Objeto3D {
     objeto.superficie = superficie;
     // objeto.color = [0.3, 0.7, 0.7];
     objeto.color = [0, 0, 0];
-    objeto.setTexture(this.engine.getTexture("modulo"));
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("modulo"),
+      })
+    );
     objeto.setupBuffers();
 
     return objeto;

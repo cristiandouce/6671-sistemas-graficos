@@ -7,6 +7,7 @@ import { Rectangle } from "../../../primitivas/curvas/rectanculo";
 import { Circulo } from "../../../primitivas/curvas/circulo";
 import Recorrido from "../../../primitivas/curvas/recorrido";
 import { SuperficieRevolucion } from "../../../primitivas/superficies/revolucion";
+import { Material } from "../../../helpers/material";
 
 export default class PanelesSolares extends Objeto3D {
   superficie = null;
@@ -81,14 +82,11 @@ export default class PanelesSolares extends Objeto3D {
 
     const panelIzq = this.getPanel(largoPanel, anchoPanel, altoPanel);
     panelIzq.color = [0, 0, 0];
-    panelIzq.setTexture(this.engine.getTexture("panel-solar"));
-
     panelIzq.setPosition(-largoPanel / 2 - largoEje / 2, 0, 0);
     fila.addChild(panelIzq);
 
     const panelDer = this.getPanel(largoPanel, anchoPanel, altoPanel);
     panelDer.color = [0, 0, 0];
-    panelDer.setTexture(this.engine.getTexture("panel-solar"));
     panelDer.setPosition(largoPanel / 2 + largoEje / 2, 0, 0);
     fila.addChild(panelDer);
 
@@ -102,6 +100,12 @@ export default class PanelesSolares extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("panel-solar"),
+      })
+    );
     objeto.setupBuffers();
 
     objeto.setRotation(0, Math.PI / 2, 0);

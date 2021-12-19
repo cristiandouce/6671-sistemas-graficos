@@ -1,6 +1,6 @@
 export class ManagerTexturas {
   textures = {};
-
+  doneCallbacks = [];
   /**
    * @param {import("./webgl-engine").default} engine
    */
@@ -13,9 +13,22 @@ export class ManagerTexturas {
     this.textures[name] = textura;
     textura.load((err, textura) => {
       if (err) {
-        return console.error(`Error cargando textura ${name}: ${url}`, err);
+        console.error(`Error cargando textura ${name}: ${url}`, err);
       }
+
+      this.checkDone();
     });
+  }
+
+  checkDone() {
+    const { textures } = this;
+    const loading = Object.keys(textures).some((key) => !textures.loaded);
+
+    if (loading) {
+      return;
+    }
+
+    this.doneCallbacks.forEach((cb) => cb());
   }
 
   getTexture(name) {
@@ -27,7 +40,11 @@ export class ManagerTexturas {
 
   // TODO: implementar metodo para esperar a que carguen las texturas
   ready(callback) {
-    callback();
+    if (this.doneCallbacks.length === 0) {
+      return callback();
+    }
+
+    this.doneCallbacks.push(callback);
   }
 }
 
@@ -36,12 +53,15 @@ export class Textura {
    * @property {Image}
    */
   image = null;
+
+  loaded = false;
   /**
    * @param {import("./webgl-engine").default} engine
    * @param {string} name
    * @param {string} url
    */
   constructor(engine, name, url) {
+    this.loaded = false;
     this.engine = engine;
     this._texture = engine.gl.createTexture();
     this.name = name;
@@ -84,16 +104,21 @@ export class Textura {
     );
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.bindTexture(gl.TEXTURE_2D, null);
+
+    this.loaded = true;
   }
 
   bind() {
     const { gl, glProgram } = this.engine;
+
+    gl.uniform1i(gl.getUniformLocation(glProgram, "hasTexture"), this.loaded);
+
     if (!this._texture) {
-      return gl.bindTexture(gl.TEXTURE_2D, null);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+      return;
     }
     gl.activeTexture(this._texture);
     gl.bindTexture(gl.TEXTURE_2D, this._texture);
-
     gl.uniform1i(gl.getUniformLocation(glProgram, "textura"), 0);
   }
 }

@@ -1,3 +1,4 @@
+import { Material } from "../../../helpers/material";
 import { Arco, ArcoXZ, ArcoYZ } from "../../../primitivas/curvas/arco";
 import { Circulo, CirculoXZ } from "../../../primitivas/curvas/circulo";
 import Recorrido from "../../../primitivas/curvas/recorrido";
@@ -56,7 +57,13 @@ export default class Nucleo extends Objeto3D {
       )
     );
     moduloEsferico.color = [0, 0, 0];
-    moduloEsferico.setTexture(this.engine.getTexture("modulo-esferico"));
+    moduloEsferico.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("modulo-esferico"),
+      })
+    );
+
     this.addChild(moduloEsferico);
 
     this.setupBuffers();
@@ -118,8 +125,13 @@ export default class Nucleo extends Objeto3D {
     };
 
     objeto.superficie.buffers = null;
-    // objeto.color = [0.5, 0.5, 0.5];
-    objeto.setTexture(this.engine.getTexture("anillo"));
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("anillo"),
+      })
+    );
+
     objeto.setupBuffers();
 
     return objeto;
@@ -154,7 +166,12 @@ export default class Nucleo extends Objeto3D {
     objeto.superficie = new SuperficieBarrido(forma, recorrido, true, true);
     // objeto.color = [1, 0.8, 0.6];
     objeto.color = [0, 0, 0];
-    objeto.setTexture(this.engine.getTexture("modulo-cilindrico"));
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("modulo-cilindrico"),
+      })
+    );
 
     objeto.setupBuffers();
 

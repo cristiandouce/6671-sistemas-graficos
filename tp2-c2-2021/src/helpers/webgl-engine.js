@@ -184,22 +184,7 @@ export default class GLEngine {
     this.viewMatrix = viewMatrix;
   }
 
-  // TODO: falta ver donde incorporar esto, si en objeto, o en engine...
-  // ... y a que tiempos. PQ el angulo de rotacion, y la animación en sí
-  // son parte del objeto, pero el resto de las matrices son globales...
-  animate() {
-    this.rotate_angle += 0.01;
-    mat4.identity(this.modelMatrix);
-    mat4.rotate(
-      this.modelMatrix,
-      this.modelMatrix,
-      this.rotate_angle,
-      [1.0, 0.0, 1.0]
-    );
-
-    mat4.identity(this.normalMatrix);
-    mat4.multiply(this.normalMatrix, this.viewMatrix, this.modelMatrix);
-    mat4.invert(this.normalMatrix, this.normalMatrix);
-    mat4.transpose(this.normalMatrix, this.normalMatrix);
+  ready(cb) {
+    this.textureManager.ready(cb);
   }
 }

@@ -2,6 +2,7 @@ import Esfera from "../../primitivas/objetos/esfera";
 import Objeto3D from "../../primitivas/objetos/base";
 import Recorrido from "../../primitivas/curvas/recorrido";
 import { SuperficieRevolucion } from "../../primitivas/superficies/revolucion";
+import { Material } from "../../helpers/material";
 
 export default class CapsulaEspacial extends Objeto3D {
   color = [0, 0, 1.0];
@@ -63,7 +64,12 @@ export default class CapsulaEspacial extends Objeto3D {
     objeto.superficie = superficie;
     // objeto.color = [1, 0.8, 0.6];
     objeto.color = [0, 0, 0];
-    objeto.setTexture(this.engine.getTexture("shiphull"));
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("shiphull"),
+      })
+    );
     objeto.setupBuffers(200, 200);
 
     return objeto;

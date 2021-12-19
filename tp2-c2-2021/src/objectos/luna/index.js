@@ -1,3 +1,4 @@
+import { Material } from "../../helpers/material";
 import Objeto3D from "../../primitivas/objetos/base";
 import Esfera from "../../primitivas/superficies/esfera";
 
@@ -14,7 +15,13 @@ export class Luna extends Objeto3D {
     // this.superficie = new SuperficieRevolucion(forma);
     // this.rotation = [-Math.PI / 2, 0, Math.PI / 3];
     this.superficie = new Esfera(radio);
-    this.setTexture(engine.getTexture("luna"));
+    this.setMaterial(
+      Material.create({
+        engine: this.engine,
+        texture: this.engine.getTexture("luna"),
+      })
+    );
+
     // this.rotation = [Math.PI / 5, 0, -Math.PI / 6];
     this.setupBuffers();
   }
