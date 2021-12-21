@@ -1,3 +1,4 @@
+import { Color } from "../../../helpers/color";
 import { Material } from "../../../helpers/material";
 import { Arco, ArcoXZ, ArcoYZ } from "../../../primitivas/curvas/arco";
 import { Circulo, CirculoXZ } from "../../../primitivas/curvas/circulo";
@@ -56,7 +57,7 @@ export default class Nucleo extends Objeto3D {
         radioEsfera * Math.cos(anguloCorteEsfera)
       )
     );
-    moduloEsferico.color = [0, 0, 0];
+
     moduloEsferico.setMaterial(
       Material.create({
         engine: this.engine,
@@ -164,12 +165,11 @@ export default class Nucleo extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = new SuperficieBarrido(forma, recorrido, true, true);
-    // objeto.color = [1, 0.8, 0.6];
-    objeto.color = [0, 0, 0];
     objeto.setMaterial(
       Material.create({
         engine: this.engine,
         texture: this.engine.getTexture("modulo-cilindrico"),
+        color: Color.create(this.engine, { rgb: [0, 0, 0] }),
       })
     );
 
@@ -212,7 +212,6 @@ export default class Nucleo extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
-    objeto.color = [1, 0.8, 0.6];
     objeto.setupBuffers();
 
     return objeto;

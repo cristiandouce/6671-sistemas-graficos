@@ -1,4 +1,5 @@
 import { mat4 } from "gl-matrix";
+import { Ligths } from "./lights";
 import { ManagerTexturas } from "./texture";
 
 // TODO: revisar las responsabilidades de esta clase
@@ -17,9 +18,10 @@ export default class GLEngine {
   glProgram = null;
 
   /**
-   * @description la posición de la luz que ilumina la escena
+   * @description manager de luces
+   * @type {import("./lights").Ligths}
    */
-  lightPosition = [50, 50, 50];
+  lights = null;
 
   /** @type {import("gl-matrix").ReadonlyMat4} */
   viewMatrix = mat4.create();
@@ -40,6 +42,8 @@ export default class GLEngine {
     this.canvas = canvas;
     this.shaders = shaders;
     this.textureManager = new ManagerTexturas(this);
+    this.lights = new Ligths(this);
+
     try {
       this.canvas.width = "1280";
       this.canvas.height = "1024";
@@ -147,17 +151,11 @@ export default class GLEngine {
   // que son necesarias para dibujar la escena (globales).
   // Lo que hace es preparar las variables uniform para los shaders, asignando
   // las matrices de mi programa, relativas al objeto que estoy por dibujar ahora.
-  setupVertexShaderMatrix(modelMatrix, normalMatrix, color = [0.0, 0.0, 0.0]) {
-    const { gl, glProgram, viewMatrix, projMatrix, lightPosition } = this;
+  setupVertexShaderMatrix(modelMatrix, normalMatrix) {
+    const { gl, glProgram, viewMatrix, projMatrix } = this;
 
     // obtengo referencias a las matrices del programa, del modelo a dibujar,
     // de la vista, projección y normal...
-    const colorUniform = gl.getUniformLocation(glProgram, "color");
-    const lightPositionUniform = gl.getUniformLocation(
-      glProgram,
-      "lightPosition"
-    );
-
     const modelMatrixUniform = gl.getUniformLocation(glProgram, "modelMatrix");
     const viewMatrixUniform = gl.getUniformLocation(glProgram, "viewMatrix");
     const projMatrixUniform = gl.getUniformLocation(glProgram, "projMatrix");
@@ -168,12 +166,14 @@ export default class GLEngine {
 
     // Y luego asigno a estas variables uniformes de los shaders a las matrices de
     // lo que estoy por dibujar. La model matrix proviende del modelo a representar ahora
-    gl.uniform3fv(colorUniform, color);
-    gl.uniform3fv(lightPositionUniform, lightPosition);
     gl.uniformMatrix4fv(modelMatrixUniform, false, modelMatrix);
     gl.uniformMatrix4fv(viewMatrixUniform, false, viewMatrix);
     gl.uniformMatrix4fv(projMatrixUniform, false, projMatrix);
     gl.uniformMatrix4fv(normalMatrixUniform, false, normalMatrix);
+  }
+
+  drawLights() {
+    this.lights.bind();
   }
 
   getViewMatrix() {

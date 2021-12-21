@@ -1,4 +1,7 @@
 import dat from "dat.gui";
+import { vec3 } from "gl-matrix";
+import { Color } from "../helpers/color";
+import { Light } from "../helpers/lights";
 import { Material } from "../helpers/material";
 import CapsulaEspacial from "../objectos/capsula";
 import Drone from "../objectos/drone";
@@ -28,7 +31,7 @@ export default class Application {
     /** numero de modulos en el anillo: [2, 8] */
     ringModules: 4,
 
-    selectedCamera: "orbital 1",
+    selectedCamera: "orbital capsula",
   };
 
   /**
@@ -135,6 +138,10 @@ export default class Application {
         break;
       case "4":
         this.guiState.selectedCamera = "orbital capsula";
+        this.cameras["orbital capsula"].setTarget(
+          this.drone.children[0].getWorldPosition()
+        );
+
         break;
     }
 
@@ -183,6 +190,10 @@ export default class Application {
         // url: "texturas/anillo/TexturesCom_MetalFloorsBare0066_17_M.png",
         url: "texturas/anillo/TexturesCom_MetalFloorsBare0066_19_seamless_S.png",
       },
+      {
+        name: "reflection-tierra",
+        url: "texturas/earth_refmap.jpg",
+      },
     ];
 
     this.engine.loadTextures(textures);
@@ -191,11 +202,14 @@ export default class Application {
   initializeScene() {
     const tierra = new Tierra(this.engine, 500);
     tierra.setPosition(10, -700, 10);
-    tierra.color = [0, 0, 0];
     tierra.setMaterial(
       Material.create({
         engine: this.engine,
         texture: this.engine.getTexture("tierra"),
+        // applyLights: false,
+        color: Color.create(this.engine, {
+          rgb: [0, 0, 0],
+        }),
       })
     );
 
@@ -203,7 +217,6 @@ export default class Application {
 
     const luna = new Luna(this.engine, 50);
     luna.setPosition(350, -150, 350);
-    luna.color = [0, 0, 0];
 
     this.rootObject.addChild(luna);
 
@@ -211,10 +224,13 @@ export default class Application {
     sol.setPosition(-700, -150, 700);
     sol.setRotation(Math.PI / 3, Math.PI / 4, Math.PI / 3);
 
-    sol.color = [0, 0, 0];
-    // const sol = new Sol(this.engine, 10);
-    // sol.setPosition(-70, -15, 70);
-    // sol.color = [0, 0, 0];
+    // luz del sol
+    this.engine.lights.createLight({
+      type: Light.types.LIGHT_TYPE_DIRECTIONAL,
+      color: [1.0, 1.0, 1.0],
+      position: [-140, -30, 140],
+      direction: [10, -50, 10],
+    });
 
     this.rootObject.addChild(sol);
 
@@ -229,7 +245,7 @@ export default class Application {
     const capsula = new CapsulaEspacial(this.engine);
     capsula.setPosition(0, -3, -7);
 
-    const drone = new Drone(this.engine, this.cameras.drone);
+    const drone = (this.drone = new Drone(this.engine, this.cameras.drone));
     drone.addChild(capsula);
     this.rootObject.addChild(drone);
 
@@ -272,6 +288,7 @@ export default class Application {
       this.cameras[this.guiState.selectedCamera].getViewMatrix()
     );
     requestAnimationFrame(this.tick.bind(this));
+    this.engine.drawLights();
     this.rootObject.draw();
   }
 }

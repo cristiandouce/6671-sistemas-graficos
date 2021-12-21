@@ -19,6 +19,7 @@ export class Sol extends Objeto3D {
     this.setMaterial(
       Material.create({
         engine: this.engine,
+        applyLights: false,
         texture: this.engine.getTexture("sol"),
       })
     );

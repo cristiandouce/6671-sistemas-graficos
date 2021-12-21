@@ -15,11 +15,9 @@ struct Light {
   vec3 direction;
   float cos_threshold;
   float decay;
-  vec3 decayCoefficients;
 };
 
 uniform vec3 color;
-uniform bool applyLights;
 
 varying vec3 vNormal;
 varying vec3 vPosWorld;
@@ -57,18 +55,18 @@ vec3 v_light_direction(Light light, vec3 ref) {
   return vec3(0.0, 0.0, 0.0);
 }
 
-vec3 phong_diffuse_intensity(Light light, vec3 kd) {
-  vec3 L = normalize(v_light_direction(light, vPosWorld));
+float phong_diffuse_intensity(Light light, float kd) {
+  vec3 L = v_light_direction(light, vPosWorld);
   vec3 N = vNormal;
 
   return kd * max(dot(L, N), 0.0);
 }
 
-vec3 phong_specular_intensity(Light light, vec3 ks, float glossiness) {
+float phong_specular_intensity(Light light, float ks, float glossiness) {
   vec3 L = v_light_direction(light, vPosWorld);
   vec3 N = vNormal;
   vec3 V = vFromPointToCameraNormalized;
-  vec3 R = -reflect(normalize(L), N); // TODO: revisar
+  vec3 R = reflect(-L, N); // TODO: revisar
 
   return ks * pow(
     max(dot(R,V), 0.0),
@@ -82,9 +80,7 @@ float get_light_attenuation(Light light) {
 
   // computamos atenuacion lineal con la distancia
   // http://learnwebgl.brown37.net/09_lights/lights_attenuation.html
-  vec3 c = vec3(0.0, 1.0, 0.0);
-  // float d = c[0] + c[1] * length(L) + c[2] * length(L) * length(L);
-  float d = light.decayCoefficients[0] + light.decayCoefficients[1] * length(L) + light.decayCoefficients[2] * length(L) * length(L);
+  float d = length(L);
 
   if (light.type == LIGHT_TYPE_DIRECTIONAL) {
     return 1.0;
@@ -94,7 +90,7 @@ float get_light_attenuation(Light light) {
     float cosTheta = dot(normalize(L), -light.direction);
     if (abs(cosTheta) <= light.cos_threshold) {
       // decaimiento lineal con el angulo de separación con la dirección
-      return (1.0-cosTheta)/d;
+      return 1.0-cosTheta;
     } else {
       // fuera del angulo del spotlight la luz no contribuye
       return 0.0;
@@ -104,68 +100,45 @@ float get_light_attenuation(Light light) {
   return 1.0/d;
 }
 
-vec3 get_spolight_intensity(Light light, vec3 kd) {
-  float intensity = 0.0;
-  float decay = 0.04;
-
-  vec3 L = v_light_direction(light, vPosWorld);
-  float dotFromDirection = dot(L, -light.direction);
-
-  if (dotFromDirection >= light.cos_threshold) {
-      intensity = dot(vNormal, L);
-      float dist = distance(light.position, vPosWorld);
-      return kd * intensity * (decay / dist) /1000.0;
-  } else {
-      return vec3(0,0,0);
-  }
-}
-
-vec3 phong_light_model(Light light, vec3 kd, vec3 ks) {
-
-  if (light.type == LIGHT_TYPE_SPOTLIGHT) {
-    get_spolight_intensity(light, kd);
-  }
+vec3 phong_light_model(Light light, vec3 phong) {
+  // parametros de modelo de phong para el material
+  float ka = phong[0];
+  float kd = phong[1];
+  float ks = phong[2];
 
   float attenuation = get_light_attenuation(light);
-  float baseIntensity = 200.0;
-  vec3 v_phong_intensity = (
-    // vec3(0.05, 0.05, 0.05) +
+  float baseIntensity = 1.0;
+
+  return baseIntensity * attenuation * light.color * (
+    ka +
     phong_diffuse_intensity(light, kd) +
     phong_specular_intensity(light, ks, glossiness)
   );
-  return baseIntensity * attenuation * light.color * v_phong_intensity;
 }
 
 void main(void) {
   // inicializo el vector de fragmento con el color del punto
-  vec3 frColor = vec3(0.0, 0.0, 0.0);
-  vec3 baseColor = vec3(0.0, 0.0, 0.0);
-  vec3 kd;
-  vec3 ks;
+  vec3 frColor = vPointColor;
+
   // si tengo una textura, la aplico
   if (hasTexture) {
     vec4 textureColor = texture2D(textura, vUv);
-    baseColor = textureColor.xyz;
-    kd = phongConstants[1] * textureColor.xyz;
-    ks = phongConstants[2] * textureColor.xyz;
+    frColor = textureColor.xyz;
   } else {
     // de lo contrario, me quedo con el color base
-    baseColor = vPointColor.xyz;
-    kd = phongConstants[1] * vPointColor.xyz;
-    ks = phongConstants[2] * vPointColor.xyz;
   }
 
   // computamos la intensidad y color de las luces
-  if (applyLights) {
-    for (int i = 0; i < RESERVED_LIGHTS_ARRAY; i++) {
-      if (lights[i].loaded) {
-        frColor += phong_light_model(lights[i], kd, ks);
-      }
+  vec3 lightColor = vec3(0.0, 0.0, 0.0);
+  for (int i = 0; i < RESERVED_LIGHTS_ARRAY; i++) {
+    if (!lights[i].loaded) {
+      continue;
     }
-    frColor += phongConstants[0] * baseColor;
-  } else {
-    frColor = baseColor;
+
+    lightColor += phong_light_model(lights[i], phongConstants);
   }
+
+  frColor += lightColor;
 
   if (hasReflection) {
     // obtenemos la direccion del vector de reflexion y su modulo
@@ -174,12 +147,12 @@ void main(void) {
 
     // mapa a coordenadas esfericas theta y phi
     float theta = map(atan(reflection_vector.x, reflection_vector.z), -PI, PI, 0., 1.);
-    float phi = map(acos(reflection_vector.y / m_reflection_vector), 0., PI, 0., 1.);
+    float phi = map(acos(reflection_vector.z / m_reflection_vector), 0., PI, 0., 1.);
 
     vec4 reflectionColor = texture2D(reflection, vec2(theta,phi));
 
     // frColor = mix(frColor, reflectionColor.xyz, 0.5);
-    frColor += reflectionColor.xyz * phongConstants[2] * 0.7;
+    frColor += reflectionColor.xyz * 0.5;
   }
 
   gl_FragColor = vec4(frColor,1.0);

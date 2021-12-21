@@ -81,7 +81,6 @@ export default class PruebaRevolucion extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = new SuperficieRevolucion(forma);
-    objeto.color = [1, 0.8, 0.9];
     objeto.setupBuffers();
 
     // objeto.setRotation(Math.PI / 2, Math.PI, 0);

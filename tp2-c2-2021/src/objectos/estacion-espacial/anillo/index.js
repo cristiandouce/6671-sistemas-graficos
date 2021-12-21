@@ -1,4 +1,5 @@
 import { mat4 } from "gl-matrix";
+import { Color } from "../../../helpers/color";
 import { Material } from "../../../helpers/material";
 import { Arco } from "../../../primitivas/curvas/arco";
 import Recorrido from "../../../primitivas/curvas/recorrido";
@@ -26,7 +27,14 @@ export default class Anillo extends Objeto3D {
     this.radioAnillo = 8;
 
     const centro = this.getCentro();
-    centro.color = vec3.fromValues(1, 0.5, 0.0);
+    centro.setMaterial(
+      Material.create({
+        engine: this.engine,
+        color: Color.create(this.engine, {
+          rgb: vec3.fromValues(1, 0.5, 0.0),
+        }),
+      })
+    );
     this.addChild(centro);
 
     const cilindroCircular = this.getCilindroCircular(0.3, this.radioAnillo);
@@ -90,11 +98,25 @@ export default class Anillo extends Objeto3D {
 
     const vigaIzquierda = new Prisma(this.engine, ancho, ancho, longitud);
     vigaIzquierda.setPosition(-distEntreVigas, 0, 0);
-    vigaIzquierda.color = color;
+    vigaIzquierda.setMaterial(
+      Material.create({
+        engine: this.engine,
+        color: Color.create(this.engine, {
+          rgb: color,
+        }),
+      })
+    );
 
     const vigaDerecha = new Prisma(this.engine, ancho, ancho, longitud);
     vigaDerecha.setPosition(distEntreVigas, 0, 0);
-    vigaDerecha.color = color;
+    vigaDerecha.setMaterial(
+      Material.create({
+        engine: this.engine,
+        color: Color.create(this.engine, {
+          rgb: color,
+        }),
+      })
+    );
 
     const superficieCilindro = new SuperficieRevolucion(
       new Rect2D(radio, -largo / 2, radio, largo / 2)
@@ -116,7 +138,14 @@ export default class Anillo extends Objeto3D {
       cilindro.setPosition(0, 0, posicion);
       cilindro.setRotation(0, rotacion, 0);
       cilindro.setEscala(2, 1, 1);
-      cilindro.color = color;
+      cilindro.setMaterial(
+        Material.create({
+          engine: this.engine,
+          color: Color.create(this.engine, {
+            rgb: color,
+          }),
+        })
+      );
       cilindro.setupBuffers();
       escalera.addChild(cilindro);
     }
@@ -131,7 +160,14 @@ export default class Anillo extends Objeto3D {
 
     const superficie = new SuperficieBarrido(forma, recorrido);
     const objeto = new Objeto3D(this.engine);
-    objeto.color = color;
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        color: Color.create(this.engine, {
+          rgb: color,
+        }),
+      })
+    );
     objeto.superficie = superficie;
     objeto.superficie.getCoordenadasTextura = function (u, v) {
       const TWO_PI = 2 * Math.PI;
@@ -159,6 +195,7 @@ export default class Anillo extends Objeto3D {
       Material.create({
         engine: this.engine,
         texture: this.engine.getTexture("anillo"),
+        reflection: this.engine.getTexture("reflection-tierra"),
       })
     );
 
@@ -220,8 +257,6 @@ export default class Anillo extends Objeto3D {
     superficie.buffers = null;
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
-    // objeto.color = [0.3, 0.7, 0.7];
-    objeto.color = [0, 0, 0];
     objeto.setMaterial(
       Material.create({
         engine: this.engine,

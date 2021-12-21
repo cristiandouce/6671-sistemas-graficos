@@ -8,6 +8,7 @@ import { Circulo } from "../../../primitivas/curvas/circulo";
 import Recorrido from "../../../primitivas/curvas/recorrido";
 import { SuperficieRevolucion } from "../../../primitivas/superficies/revolucion";
 import { Material } from "../../../helpers/material";
+import { Color } from "../../../helpers/color";
 
 export default class PanelesSolares extends Objeto3D {
   superficie = null;
@@ -54,7 +55,14 @@ export default class PanelesSolares extends Objeto3D {
 
     const objeto = new Objeto3D(this.engine);
     objeto.superficie = superficie;
-    objeto.color = [0.5, 0.5, 0.5];
+    objeto.setMaterial(
+      Material.create({
+        engine: this.engine,
+        color: Color.create(this.engine, {
+          rgb: [0.5, 0.5, 0.5],
+        }),
+      })
+    );
 
     objeto.setRotation(-Math.PI / 2, 0, Math.PI / 2);
 
@@ -74,19 +82,25 @@ export default class PanelesSolares extends Objeto3D {
     ejePaneles.superficie = new SuperficieRevolucion(
       new Rect2D(radioEje, -largoEje / 2, radioEje, largoEje / 2)
     );
-    ejePaneles.color = color;
+    ejePaneles.setMaterial(
+      Material.create({
+        engine: this.engine,
+        color: Color.create(this.engine, {
+          rgb: [0.5, 0.5, 0.5],
+          glossiness: 50.0,
+        }),
+      })
+    );
     ejePaneles.setRotation(0, Math.PI / 2, 0);
     ejePaneles.setupBuffers();
 
     fila.addChild(ejePaneles);
 
     const panelIzq = this.getPanel(largoPanel, anchoPanel, altoPanel);
-    panelIzq.color = [0, 0, 0];
     panelIzq.setPosition(-largoPanel / 2 - largoEje / 2, 0, 0);
     fila.addChild(panelIzq);
 
     const panelDer = this.getPanel(largoPanel, anchoPanel, altoPanel);
-    panelDer.color = [0, 0, 0];
     panelDer.setPosition(largoPanel / 2 + largoEje / 2, 0, 0);
     fila.addChild(panelDer);
 
@@ -104,6 +118,7 @@ export default class PanelesSolares extends Objeto3D {
       Material.create({
         engine: this.engine,
         texture: this.engine.getTexture("panel-solar"),
+        color: Color.create(this.engine, {}),
       })
     );
     objeto.setupBuffers();

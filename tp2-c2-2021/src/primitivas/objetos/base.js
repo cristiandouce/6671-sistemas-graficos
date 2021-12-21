@@ -245,7 +245,7 @@ export default class Objeto3D {
 
   updateNormalMatrix() {
     const viewMatrix = this.engine.getViewMatrix();
-    mat4.identity(this.normalMatrix);
+    // mat4.identity(this.normalMatrix);
     mat4.multiply(this.normalMatrix, this.modelMatrix, viewMatrix);
     mat4.invert(this.normalMatrix, this.normalMatrix);
     mat4.transpose(this.normalMatrix, this.normalMatrix);
@@ -258,6 +258,7 @@ export default class Objeto3D {
   draw(parentModelMatrix = mat4.create()) {
     const worldModelMatrix = mat4.create();
 
+    // this.updateModelMatrix();
     // Obteno la matriz de modelado respecto del mundo
     mat4.multiply(worldModelMatrix, parentModelMatrix, this.modelMatrix);
 
@@ -303,7 +304,6 @@ export default class Objeto3D {
       return;
     }
 
-    debugger;
     this.material.bind();
 
     const vertexPositionAttribute = gl.getAttribLocation(
